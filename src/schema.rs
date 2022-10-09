@@ -3,41 +3,45 @@
 diesel::table! {
     games (id) {
         id -> Int4,
-        hometeam -> Varchar,
-        awayteam -> Varchar,
-        homescore -> Nullable<Int4>,
-        awayscore -> Nullable<Int4>,
         time -> Int4,
         stage -> Varchar,
-        homeodds -> Float8,
-        awayodds -> Float8,
-        drawodds -> Float8,
+        team_home -> Varchar,
+        team_away -> Varchar,
+        score_home -> Nullable<Int4>,
+        score_away -> Nullable<Int4>,
+        odds_home -> Float8,
+        odds_away -> Float8,
+        odds_draw -> Float8,
     }
 }
 
 diesel::table! {
     pronos (id) {
         id -> Int4,
-        fk_gameid -> Int4,
-        fk_userid -> Int4,
-        homeprediction -> Int4,
-        awayprediction -> Int4,
+        id_user -> Int4,
+        id_game -> Int4,
+        prediction_home -> Int4,
+        prediction_away -> Int4,
     }
 }
 
 diesel::table! {
     users (id) {
         id -> Int4,
-        username -> Varchar,
+        name -> Varchar,
         mail -> Varchar,
         password -> Varchar,
         score -> Int4,
-        goodresult -> Int4,
-        perfectresult -> Int4,
+        results_good -> Int4,
+        results_perfect -> Int4,
     }
 }
 
-diesel::joinable!(pronos -> games (fk_gameid));
-diesel::joinable!(pronos -> users (fk_userid));
+diesel::joinable!(pronos -> games (id_game));
+diesel::joinable!(pronos -> users (id_user));
 
-diesel::allow_tables_to_appear_in_same_query!(games, pronos, users,);
+diesel::allow_tables_to_appear_in_same_query!(
+    games,
+    pronos,
+    users,
+);

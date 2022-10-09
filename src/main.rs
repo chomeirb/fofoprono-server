@@ -26,9 +26,10 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            .service(id_get_user)
-            .service(username_get_user)
+            .service(get_user)
             .service(add_user)
+            .service(del_user)
+            .service(add_prono)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
