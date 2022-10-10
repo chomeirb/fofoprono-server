@@ -1,5 +1,4 @@
-use actix_web::Error;
-use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
+use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation, errors::Error};
 
 use serde::{Deserialize, Serialize};
 
@@ -9,15 +8,15 @@ pub struct Claims {
 }
 
 pub fn validate_token(token: &str) -> Result<bool, Error> {
-    let token = token.to_string();
+    let token = token;
     // Claims is a struct that implements Deserialize
     let token_message = decode::<Claims>(
-        &token,
+        token,
         &DecodingKey::from_secret("secret".as_ref()),
         &Validation::new(Algorithm::HS256),
     );
 
     eprintln!("token_message: {:?}", token_message);
 
-    Ok(token_message.unwrap().claims.id == 2)
+    Ok(token_message?.claims.id == 2)
 }
