@@ -1,17 +1,40 @@
 pub mod actions;
+pub mod auth;
 pub mod dbutils;
 pub mod models;
 pub mod routes;
 pub mod schema;
+use std::{env, pin::Pin};
 
-use std::env;
-
-use actix_web::{web, App, HttpServer};
+use actix_web::{dev::ServiceRequest, web, App, Error, HttpServer};
+use actix_web_httpauth::extractors::AuthenticationError;
+use actix_web_httpauth::{
+    extractors::bearer::{BearerAuth, Config},
+    middleware::HttpAuthentication,
+};
 use diesel::{
     r2d2::{self, ConnectionManager},
     PgConnection,
 };
 use routes::*;
+
+async fn validator(
+    req: ServiceRequest,
+    credentials: BearerAuth,
+) -> Result<ServiceRequest, (Error, ServiceRequest)> {
+    let config = req
+        .app_data::<Config>()
+        .map(|data| Pin::new(data).get_ref().clone())
+        .unwrap_or_else(Default::default);
+
+    if let Ok(res) = auth::validate_token(credentials.token()) {
+        if res {
+            return Ok(req);
+        }
+    }
+
+    Err((AuthenticationError::from(config).into(), req))
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -26,10 +49,15 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            .service(get_user)
-            .service(add_user)
-            .service(del_user)
-            .service(add_prono)
+            .service(login)
+            .service(
+                web::scope("")
+                    .wrap(HttpAuthentication::bearer(validator))
+                    .service(get_user)
+                    .service(add_user)
+                    .service(del_user)
+                    .service(add_prono),
+            )
     })
     .bind(("127.0.0.1", 8080))?
     .run()

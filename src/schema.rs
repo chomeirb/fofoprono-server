@@ -40,8 +40,4 @@ diesel::table! {
 diesel::joinable!(pronos -> games (id_game));
 diesel::joinable!(pronos -> users (id_user));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    games,
-    pronos,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(games, pronos, users,);
