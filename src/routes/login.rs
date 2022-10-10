@@ -1,4 +1,4 @@
-use jsonwebtoken::{encode, EncodingKey, Header};
+use jsonwebtoken::{encode, EncodingKey, Header, get_current_timestamp};
 
 use crate::{actions, auth::Claims, routes::common::*};
 
@@ -13,18 +13,17 @@ pub async fn login(pool: web::Data<DbPool>, req: web::Json<i32>) -> Result<HttpR
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    let my_claims = Claims { id };
+    let claims = Claims {
+        id,
+        exp: get_current_timestamp() as usize + 10000,
+    };
 
-    // my_claims is a struct that implements Serialize
-    // This will create a JWT using HS256 as algorithm
     let token = encode(
         &Header::default(),
-        &my_claims,
+        &claims,
         &EncodingKey::from_secret("secret".as_ref()),
     )
     .unwrap();
-
-    eprintln!("token: {}", token);
 
     Ok(HttpResponse::Ok().json(token))
 }

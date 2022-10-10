@@ -27,10 +27,8 @@ async fn validator(
         .map(|data| Pin::new(data).get_ref().clone())
         .unwrap_or_else(Default::default);
 
-    if let Ok(res) = auth::validate_token(credentials.token()) {
-        if res {
-            return Ok(req);
-        }
+    if auth::validate_token(credentials.token()).is_ok() {
+        return Ok(req);
     }
 
     Err((AuthenticationError::from(config).into(), req))
