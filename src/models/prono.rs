@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 pub struct Prono {
     pub id: i32,
 
-    pub id_game: i32,
     pub id_user: i32,
+    pub id_game: i32,
 
     pub prediction_home: i32,
     pub prediction_away: i32,
