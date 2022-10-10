@@ -1,2 +1,2 @@
 -- This file should undo anything in `up.sql`
-DELETE FROM users WHERE id < 10;
+DELETE FROM users;
