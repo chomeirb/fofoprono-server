@@ -5,7 +5,7 @@ pub mod schema;
 pub mod utils;
 use std::env;
 
-use actix_identity::IdentityMiddleware;
+// use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{cookie::Key, web, App, HttpServer};
 use diesel::{
@@ -36,14 +36,13 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            .wrap(IdentityMiddleware::default())
+            // .wrap(IdentityMiddleware::default())
             .wrap(session_mw)
-            .service(pre_add_user)
-            .service(verif_user)
-            .service(add_user)
+            .service(signup_process)
+            .service(signup_user)
             .service(login)
             .service(get_user)
-            .service(del_user)
+            // .service(del_user)
             .service(add_prono)
     })
     .bind(("127.0.0.1", 8080))?

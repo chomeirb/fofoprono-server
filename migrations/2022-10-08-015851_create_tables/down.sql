@@ -2,3 +2,4 @@
 DROP TABLE pronos;
 DROP TABLE games;
 DROP TABLE users;
+DROP TABLE hashes;

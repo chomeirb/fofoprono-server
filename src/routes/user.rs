@@ -1,14 +1,12 @@
 use crate::{
     actions,
-    models::{UniqueUser, User},
+    models::{Hash, NewHash, UniqueUser, User},
     routes::common::*,
     utils::mail::send_mail,
 };
 
 use actix_identity::Identity;
-use actix_session::Session;
 use actix_web::{HttpMessage, HttpRequest};
-use rand::Rng;
 
 #[get("/user")]
 async fn get_user(pool: web::Data<DbPool>, user: Identity) -> Result<HttpResponse, Error> {
@@ -25,47 +23,38 @@ async fn get_user(pool: web::Data<DbPool>, user: Identity) -> Result<HttpRespons
 }
 
 #[post("/signup")]
-async fn pre_add_user(mail: web::Json<String>, session: Session) -> Result<HttpResponse, Error> {
-    // TODO : check if mail isn't already in db
-    let code = rand::thread_rng().gen_range(1000..9999);
-
-    session.insert(code.to_string(), &mail)?;
-    send_mail(&mail, code).await.ok();
+async fn signup_process(
+    pool: web::Data<DbPool>,
+    user: web::Json<UniqueUser>,
+) -> Result<HttpResponse, Error> {
+    web::block(move || {
+        let mut conn = pool.get().unwrap();
+        let User { id, mail, .. } = actions::add_user(&mut conn, user.0).unwrap();
+        let Hash { uuid, .. } = actions::add_hash(&mut conn, NewHash { id_user: id }).unwrap();
+        send_mail(&mail, uuid).unwrap();
+    })
+    .await?;
+    // .map_err(actix_web::error::ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().finish())
 }
 
-#[post("/verif")]
-async fn verif_user(code: web::Json<i32>, session: Session) -> Result<HttpResponse, Error> {
-    // TODO : check if code is correct
-
-    if session.get::<String>(&code.to_string())?.is_some() {
-        Ok(HttpResponse::Ok().finish())
-    } else {
-        Ok(HttpResponse::Unauthorized().finish())
-    }
-}
-
-#[post("/user/{code}")]
-async fn add_user(
+#[post("/signup/{uuid}")]
+async fn signup_user(
     pool: web::Data<DbPool>,
-    mut user: web::Form<UniqueUser>,
-    session: Session,
-    code: web::Path<i32>,
+    uuid: web::Path<uuid::Uuid>,
 ) -> Result<HttpResponse, Error> {
-        user.0.mail = session.get::<String>(&code.to_string())?.unwrap();
+    let uuid = uuid.into_inner();
 
-        web::block(move || {
-            let mut conn = pool.get()?;
-            actions::add_user(&mut conn, user.0)
-        })
-        .await?
-        .map_err(actix_web::error::ErrorInternalServerError)?;
+    web::block(move || {
+        let mut conn = pool.get()?;
+        let Hash { id_user, .. } = actions::get_and_remove_hash(&mut conn, uuid)?;
+        actions::verify_user(&mut conn, id_user)
+    })
+    .await?
+    .map_err(actix_web::error::ErrorInternalServerError)?;
 
-        session.purge();
-
-        Ok(HttpResponse::Ok().finish())
-
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[delete("/user")]
@@ -85,8 +74,8 @@ async fn del_user(pool: web::Data<DbPool>, user: Identity) -> Result<HttpRespons
 #[get("/login")]
 async fn login(
     pool: web::Data<DbPool>,
-    request: HttpRequest,
     user: web::Form<UniqueUser>,
+    req: HttpRequest,
 ) -> Result<HttpResponse, Error> {
     let User { id, .. } = web::block(move || {
         let mut conn = pool.get()?;
@@ -95,7 +84,7 @@ async fn login(
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    Identity::login(&request.extensions(), id.to_string()).unwrap();
+    Identity::login(&req.extensions(), id.to_string()).unwrap();
 
     Ok(HttpResponse::Ok().finish())
 }

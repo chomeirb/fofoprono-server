@@ -8,7 +8,9 @@ CREATE TABLE users (
 
   score INT NOT NULL DEFAULT 0,
   results_good INT NOT NULL DEFAULT 0,
-  results_perfect INT NOT NULL DEFAULT 0
+  results_perfect INT NOT NULL DEFAULT 0,
+
+  active BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE games (
@@ -36,3 +38,8 @@ CREATE TABLE pronos (
   prediction_home INTEGER NOT NULL CHECK (prediction_home >= 0),
   prediction_away INTEGER NOT NULL CHECK (prediction_away >= 0)
 );
+
+CREATE TABLE hashes (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id_user INTEGER NOT NULL REFERENCES users(id)
+)
