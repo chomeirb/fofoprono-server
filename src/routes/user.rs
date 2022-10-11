@@ -1,11 +1,19 @@
-use crate::{actions, auth::Claims, models::NewUser, routes::common::*};
+use crate::{
+    actions,
+    auth::Claims,
+    models::{UniqueUser, User},
+    routes::common::*,
+};
 
 use actix_web::web::ReqData;
 use jsonwebtoken::{encode, get_current_timestamp, EncodingKey, Header};
 
-#[get("/user/{id_user}")]
-async fn get_user(pool: web::Data<DbPool>, id: web::Path<i32>) -> Result<HttpResponse, Error> {
-    let user_id = id.into_inner();
+#[get("/user")]
+async fn get_user(
+    pool: web::Data<DbPool>,
+    user_claims: ReqData<Claims>,
+) -> Result<HttpResponse, Error> {
+    let user_id = user_claims.id;
 
     let user = web::block(move || {
         let mut conn = pool.get()?;
@@ -18,7 +26,10 @@ async fn get_user(pool: web::Data<DbPool>, id: web::Path<i32>) -> Result<HttpRes
 }
 
 #[post("/user")]
-async fn add_user(pool: web::Data<DbPool>, req: web::Json<NewUser>) -> Result<HttpResponse, Error> {
+async fn add_user(
+    pool: web::Data<DbPool>,
+    req: web::Json<UniqueUser>,
+) -> Result<HttpResponse, Error> {
     let user = web::block(move || {
         let mut conn = pool.get()?;
         actions::add_user(&mut conn, req.0)
@@ -47,12 +58,13 @@ async fn del_user(
 }
 
 #[get("/login")]
-pub async fn login(pool: web::Data<DbPool>, req: web::Json<i32>) -> Result<HttpResponse, Error> {
-    let id = req.into_inner();
-
-    web::block(move || {
+pub async fn login(
+    pool: web::Data<DbPool>,
+    req: web::Form<UniqueUser>,
+) -> Result<HttpResponse, Error> {
+    let User { id, .. } = web::block(move || {
         let mut conn = pool.get()?;
-        actions::get_user(&mut conn, id)
+        actions::credentials_get_user(&mut conn, req.0)
     })
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
