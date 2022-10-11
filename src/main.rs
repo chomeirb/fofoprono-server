@@ -6,12 +6,15 @@ pub mod routes;
 pub mod schema;
 use std::{env, pin::Pin};
 
+use actix_web::web::ReqData;
 use actix_web::{dev::ServiceRequest, web, App, Error, HttpServer};
+use actix_web::{get, Responder};
 use actix_web_httpauth::extractors::AuthenticationError;
 use actix_web_httpauth::{
     extractors::bearer::{BearerAuth, Config},
     middleware::HttpAuthentication,
 };
+use auth::Claims;
 use diesel::{
     r2d2::{self, ConnectionManager},
     PgConnection,
@@ -22,14 +25,14 @@ async fn validator(
     req: ServiceRequest,
     credentials: BearerAuth,
 ) -> Result<ServiceRequest, (Error, ServiceRequest)> {
+    if auth::validate_token(&req, credentials.token()).is_ok() {
+        return Ok(req);
+    }
+
     let config = req
         .app_data::<Config>()
         .map(|data| Pin::new(data).get_ref().clone())
         .unwrap_or_else(Default::default);
-
-    if auth::validate_token(credentials.token()).is_ok() {
-        return Ok(req);
-    }
 
     Err((AuthenticationError::from(config).into(), req))
 }
@@ -51,6 +54,7 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("")
                     .wrap(HttpAuthentication::bearer(validator))
+                    .service(hello)
                     .service(get_user)
                     .service(add_user)
                     .service(del_user)
@@ -60,4 +64,9 @@ async fn main() -> std::io::Result<()> {
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
+}
+
+#[get("/hello")]
+async fn hello(user_claims: ReqData<Claims>) -> impl Responder {
+    format!("Hello user with id: {}!", user_claims.id)
 }
