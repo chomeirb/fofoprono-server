@@ -1,5 +1,4 @@
 pub mod actions;
-pub mod auth;
 pub mod dbutils;
 pub mod mail;
 pub mod models;
@@ -7,8 +6,9 @@ pub mod routes;
 pub mod schema;
 use std::env;
 
-use actix_web::{web, App, HttpServer};
-use actix_web_httpauth::middleware::HttpAuthentication;
+use actix_identity::IdentityMiddleware;
+use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_web::{cookie::Key, web, App, HttpServer};
 use diesel::{
     r2d2::{self, ConnectionManager},
     PgConnection,
@@ -25,18 +25,25 @@ async fn main() -> std::io::Result<()> {
         .build(manager)
         .expect("Failed to create pool.");
 
+    let secret_key = Key::generate();
+
     HttpServer::new(move || {
+        let session_mw =
+            SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
+                // disable secure cookie for local testing
+                .cookie_http_only(true)
+                .cookie_secure(false)
+                .build();
+
         App::new()
             .app_data(web::Data::new(pool.clone()))
+            .wrap(IdentityMiddleware::default())
+            .wrap(session_mw)
             .service(add_user)
             .service(login)
-            .service(
-                web::scope("")
-                    .wrap(HttpAuthentication::bearer(auth::validator))
-                    .service(get_user)
-                    .service(del_user)
-                    .service(add_prono),
-            )
+            .service(get_user)
+            .service(del_user)
+            .service(add_prono)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
