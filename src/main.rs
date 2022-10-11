@@ -7,6 +7,7 @@ use std::env;
 
 // use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_cors::Cors;
 use actix_web::{cookie::Key, web, App, HttpServer};
 use diesel::{
     r2d2::{self, ConnectionManager},
@@ -36,13 +37,13 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            // .wrap(IdentityMiddleware::default())
+            .wrap(Cors::permissive())
             .wrap(session_mw)
             .service(signup_process)
             .service(signup_user)
             .service(login)
             .service(get_user)
-            // .service(del_user)
+            .service(del_user)
             .service(add_prono)
     })
     .bind(("127.0.0.1", 8080))?
