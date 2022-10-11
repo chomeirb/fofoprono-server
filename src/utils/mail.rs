@@ -2,13 +2,15 @@ use lettre::error::Error;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
 
-pub async fn send_mail(to: &str) -> Result<(), Error> {
+pub async fn send_mail(to: &str, code: i32) -> Result<(), Error> {
     let email = Message::builder()
         .from("fofoporno <fofoprono@zohomail.eu>".parse().unwrap())
         .reply_to("Yuin <fofoprono@zohomail.eu>".parse().unwrap())
         .to(["Hei <", to, ">"].join("").parse().unwrap())
-        .subject("Happy new year")
-        .body(String::from("Be happy!"))
+        .subject("Welcome to Fofoprono!")
+        .body(String::from(
+            ["Your verification code:", &code.to_string()].join(" "),
+        ))
         .unwrap();
 
     let creds = Credentials::new(

@@ -1,9 +1,8 @@
 pub mod actions;
-pub mod dbutils;
-pub mod mail;
 pub mod models;
 pub mod routes;
 pub mod schema;
+pub mod utils;
 use std::env;
 
 use actix_identity::IdentityMiddleware;
@@ -39,6 +38,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(pool.clone()))
             .wrap(IdentityMiddleware::default())
             .wrap(session_mw)
+            .service(pre_add_user)
+            .service(verif_user)
             .service(add_user)
             .service(login)
             .service(get_user)

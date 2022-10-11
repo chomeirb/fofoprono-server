@@ -14,3 +14,4 @@ serde = { version = "1", features = ["derive"] }
 actix-session = { version = "0", features = ["cookie-session"] }
 actix-identity = "0"
 lettre = "0.10"
+rand = "0"
