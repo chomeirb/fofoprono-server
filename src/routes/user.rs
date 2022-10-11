@@ -2,7 +2,7 @@ use crate::{
     actions,
     auth::Claims,
     models::{UniqueUser, User},
-    routes::common::*,
+    routes::common::*, mail::send_mail,
 };
 
 use actix_web::web::ReqData;
@@ -14,6 +14,7 @@ async fn get_user(
     user_claims: ReqData<Claims>,
 ) -> Result<HttpResponse, Error> {
     let user_id = user_claims.id;
+
 
     let user = web::block(move || {
         let mut conn = pool.get()?;
@@ -36,6 +37,8 @@ async fn add_user(
     })
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    send_mail(&user.mail).await.ok();
 
     Ok(HttpResponse::Ok().json(user))
 }
@@ -80,6 +83,8 @@ pub async fn login(
         &EncodingKey::from_secret("secret".as_ref()),
     )
     .unwrap();
+
+
 
     Ok(HttpResponse::Ok().json(token))
 }
