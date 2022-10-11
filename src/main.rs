@@ -28,12 +28,12 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
+            .service(add_user)
             .service(login)
             .service(
                 web::scope("")
                     .wrap(HttpAuthentication::bearer(auth::validator))
                     .service(get_user)
-                    .service(add_user)
                     .service(del_user)
                     .service(add_prono),
             )
