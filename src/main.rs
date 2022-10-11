@@ -1,10 +1,10 @@
 pub mod actions;
 pub mod auth;
 pub mod dbutils;
+pub mod mail;
 pub mod models;
 pub mod routes;
 pub mod schema;
-pub mod mail;
 use std::env;
 
 use actix_web::{web, App, HttpServer};

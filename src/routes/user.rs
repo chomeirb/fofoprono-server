@@ -1,8 +1,9 @@
 use crate::{
     actions,
     auth::Claims,
+    mail::send_mail,
     models::{UniqueUser, User},
-    routes::common::*, mail::send_mail,
+    routes::common::*,
 };
 
 use actix_web::web::ReqData;
@@ -14,7 +15,6 @@ async fn get_user(
     user_claims: ReqData<Claims>,
 ) -> Result<HttpResponse, Error> {
     let user_id = user_claims.id;
-
 
     let user = web::block(move || {
         let mut conn = pool.get()?;
@@ -29,11 +29,11 @@ async fn get_user(
 #[post("/user")]
 async fn add_user(
     pool: web::Data<DbPool>,
-    req: web::Json<UniqueUser>,
+    user: web::Form<UniqueUser>,
 ) -> Result<HttpResponse, Error> {
     let user = web::block(move || {
         let mut conn = pool.get()?;
-        actions::add_user(&mut conn, req.0)
+        actions::add_user(&mut conn, user.0)
     })
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
@@ -61,13 +61,10 @@ async fn del_user(
 }
 
 #[get("/login")]
-pub async fn login(
-    pool: web::Data<DbPool>,
-    req: web::Form<UniqueUser>,
-) -> Result<HttpResponse, Error> {
+async fn login(pool: web::Data<DbPool>, user: web::Form<UniqueUser>) -> Result<HttpResponse, Error> {
     let User { id, .. } = web::block(move || {
         let mut conn = pool.get()?;
-        actions::credentials_get_user(&mut conn, req.0)
+        actions::credentials_get_user(&mut conn, user.0)
     })
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
@@ -83,8 +80,6 @@ pub async fn login(
         &EncodingKey::from_secret("secret".as_ref()),
     )
     .unwrap();
-
-
 
     Ok(HttpResponse::Ok().json(token))
 }
