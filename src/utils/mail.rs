@@ -1,3 +1,4 @@
+use lettre::message::SinglePart;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::response::Response;
 use lettre::transport::smtp::Error;
@@ -9,12 +10,16 @@ pub fn send_mail(to: &str, uuid: uuid::Uuid) -> Result<Response, Error> {
         .reply_to("Yuin <fofoprono@zohomail.eu>".parse().unwrap())
         .to(["Hei <", to, ">"].join("").parse().unwrap())
         .subject("Welcome to Fofoprono!")
-        .body(
+        .singlepart(SinglePart::html(
             [
-                "Your link: http://localhost:8080/signup/",
+                "<form style='display: none' action='http://localhost:8080/signup/",
                 &uuid.to_string(),
+                "' method='post'><button type='submit' id='button_to_link'>",
+                "</button>",
+                "</form>",
+                "<label style='text-decoration: underline' for='button_to_link'>  Click here to verify rour account! </label>",
             ]
-            .join(""),
+            .join("")),
         )
         .unwrap();
 
