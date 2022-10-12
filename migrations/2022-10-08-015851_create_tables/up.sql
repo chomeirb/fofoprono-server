@@ -40,6 +40,6 @@ CREATE TABLE pronos (
 );
 
 CREATE TABLE hashes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY DEFAULT md5(random()::text),
   id_user INTEGER NOT NULL REFERENCES users(id)
 )

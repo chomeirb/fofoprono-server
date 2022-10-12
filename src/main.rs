@@ -5,9 +5,9 @@ pub mod schema;
 pub mod utils;
 use std::env;
 
-// use actix_identity::IdentityMiddleware;
-use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_cors::Cors;
+use actix_identity::IdentityMiddleware;
+use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{cookie::Key, web, App, HttpServer};
 use diesel::{
     r2d2::{self, ConnectionManager},
@@ -38,7 +38,9 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(pool.clone()))
             .wrap(Cors::permissive())
+            .wrap(IdentityMiddleware::<i32>::default())
             .wrap(session_mw)
+            .service(index)
             .service(signup_process)
             .service(signup_user)
             .service(login)

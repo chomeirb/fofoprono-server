@@ -1,6 +1,5 @@
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Queryable, Serialize, Deserialize)]
 pub struct User {
@@ -27,7 +26,7 @@ pub struct UniqueUser {
 
 #[derive(Queryable, Serialize, Deserialize)]
 pub struct Hash {
-    pub uuid: Uuid,
+    pub uuid: String,
     pub id_user: i32,
 }
 

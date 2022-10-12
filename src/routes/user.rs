@@ -6,11 +6,20 @@ use crate::{
 };
 
 use actix_identity::Identity;
-use actix_web::{HttpMessage, HttpRequest};
+use actix_web::{http::header, HttpMessage, HttpRequest};
+
+#[get("/")]
+async fn index(user: Option<Identity<i32>>) -> HttpResponse {
+    if let Some(user) = user {
+        HttpResponse::Ok().body(format!("Hello user {}", user.id().unwrap()))
+    } else {
+        HttpResponse::Ok().body("Hello anonymous!")
+    }
+}
 
 #[get("/user")]
-async fn get_user(pool: web::Data<DbPool>, user: Identity) -> Result<HttpResponse, Error> {
-    let user_id = user.id().unwrap().parse().unwrap();
+async fn get_user(pool: web::Data<DbPool>, user: Identity<i32>) -> Result<HttpResponse, Error> {
+    let user_id = user.id().unwrap();
 
     let user = web::block(move || {
         let mut conn = pool.get()?;
@@ -42,11 +51,12 @@ async fn signup_process(
 #[post("/signup/{uuid}")]
 async fn signup_user(
     pool: web::Data<DbPool>,
-    uuid: web::Path<uuid::Uuid>,
+    uuid: web::Path<String>,
+    req: HttpRequest,
 ) -> Result<HttpResponse, Error> {
     let uuid = uuid.into_inner();
 
-    web::block(move || {
+    let User { id, .. } = web::block(move || {
         let mut conn = pool.get()?;
         let Hash { id_user, .. } = actions::get_and_remove_hash(&mut conn, uuid)?;
         actions::verify_user(&mut conn, id_user)
@@ -54,12 +64,16 @@ async fn signup_user(
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Ok().finish())
+    // TODO: Redirect to /login with information instead (use TemporaryRedirect).
+    Identity::login(&req.extensions(), id.to_string()).unwrap();
+    Ok(HttpResponse::SeeOther()
+        .append_header((header::LOCATION, "/"))
+        .finish())
 }
 
 #[delete("/user")]
-async fn del_user(pool: web::Data<DbPool>, user: Identity) -> Result<HttpResponse, Error> {
-    let user_id = user.id().unwrap().parse().unwrap();
+async fn del_user(pool: web::Data<DbPool>, user: Identity<i32>) -> Result<HttpResponse, Error> {
+    let user_id = user.id().unwrap();
 
     let user = web::block(move || {
         let mut conn = pool.get()?;
@@ -84,7 +98,7 @@ async fn login(
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    Identity::login(&req.extensions(), id.to_string()).unwrap();
+    Identity::login(&req.extensions(), id).unwrap();
 
     Ok(HttpResponse::Ok().finish())
 }

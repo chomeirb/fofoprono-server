@@ -8,13 +8,14 @@ edition = "2021"
 [dependencies]
 actix-web = "4"
 actix-cors = "0"
-diesel = { version = "2", features = ["postgres", "r2d2", "uuid"] }
-uuid = { version = "1", features = ["serde"] }
+diesel = { version = "2", features = ["postgres", "r2d2"] }
 dotenvy = "0"
 serde_json = "1"
 serde = { version = "1", features = ["derive"] }
-actix-session = { version = "0", features = ["cookie-session"] }
-actix-identity = "0"
+# actix-session = { version = "0", features = ["cookie-session"] }
+# actix-identity = "0"
+actix-session = { path = "D:/Dev/rust/actix-extras/actix-session", features = ["cookie-session"] }
+actix-identity = { path = "D:/Dev/rust/actix-extras/actix-identity" }
 lettre = "0.10"
 rand = "0"
 nanoid = "0"

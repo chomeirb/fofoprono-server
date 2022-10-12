@@ -17,7 +17,7 @@ diesel::table! {
 
 diesel::table! {
     hashes (id) {
-        id -> Uuid,
+        id -> Text,
         id_user -> Int4,
     }
 }
@@ -49,9 +49,4 @@ diesel::joinable!(hashes -> users (id_user));
 diesel::joinable!(pronos -> games (id_game));
 diesel::joinable!(pronos -> users (id_user));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    games,
-    hashes,
-    pronos,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(games, hashes, pronos, users,);
