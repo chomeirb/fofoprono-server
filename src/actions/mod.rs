@@ -1,4 +1,7 @@
+pub type DbError = Box<dyn std::error::Error + Send + Sync>;
+
 mod common {
+    pub use super::DbError;
     pub use diesel::pg::PgConnection;
     use diesel::{
         associations::HasTable,
@@ -7,8 +10,6 @@ mod common {
         query_dsl::{methods::FindDsl, LoadQuery},
         Insertable, RunQueryDsl, Table,
     };
-
-    pub type DbError = Box<dyn std::error::Error + Send + Sync>;
 
     /// Finds a row of table T from a value of its primary key F.
     pub fn get_row<'a, T, M, F>(conn: &mut PgConnection, table: T, key: F) -> Result<M, DbError>

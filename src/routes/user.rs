@@ -1,32 +1,30 @@
 use crate::{
     actions,
+    auth::Auth,
     models::{Hash, NewHash, UniqueUser, User},
     routes::common::*,
     utils::mail::send_mail,
 };
 
-use actix_identity::Identity;
-use actix_web::{http::header, HttpMessage, HttpRequest};
+use actix_web::{error::ErrorInternalServerError, http::header, HttpRequest};
 
 #[get("/")]
-async fn index(user: Option<Identity<i32>>) -> HttpResponse {
+async fn index(user: Option<Auth<i32>>) -> HttpResponse {
     if let Some(user) = user {
-        HttpResponse::Ok().body(format!("Hello user {}", user.id().unwrap()))
+        HttpResponse::Ok().body(format!("Hello user {}", user.0))
     } else {
         HttpResponse::Ok().body("Hello anonymous!")
     }
 }
 
 #[get("/user")]
-async fn get_user(pool: web::Data<DbPool>, user: Identity<i32>) -> Result<HttpResponse, Error> {
-    let user_id = user.id().unwrap();
-
+async fn get_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpResponse, Error> {
     let user = web::block(move || {
         let mut conn = pool.get()?;
-        actions::get_user(&mut conn, user_id)
+        actions::get_user(&mut conn, user.0)
     })
     .await?
-    .map_err(actix_web::error::ErrorInternalServerError)?;
+    .map_err(ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().json(user))
 }
@@ -37,18 +35,18 @@ async fn signup_process(
     user: web::Json<UniqueUser>,
 ) -> Result<HttpResponse, Error> {
     web::block(move || {
-        let mut conn = pool.get().unwrap();
-        let User { id, mail, .. } = actions::add_user(&mut conn, user.0).unwrap();
-        let Hash { uuid, .. } = actions::add_hash(&mut conn, NewHash { id_user: id }).unwrap();
-        send_mail(&mail, uuid).unwrap();
+        let mut conn = pool.get()?;
+        let User { id, mail, .. } = actions::add_user(&mut conn, user.0)?;
+        let Hash { id, .. } = actions::add_hash(&mut conn, NewHash { id_user: id })?;
+        send_mail(&mail, id)
     })
-    .await?;
-    // .map_err(actix_web::error::ErrorInternalServerError)?;
+    .await?
+    .map_err(ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().finish())
 }
 
-#[post("/signup/{uuid}")]
+#[get("/signup/{uuid}")]
 async fn signup_user(
     pool: web::Data<DbPool>,
     uuid: web::Path<String>,
@@ -62,25 +60,25 @@ async fn signup_user(
         actions::verify_user(&mut conn, id_user)
     })
     .await?
-    .map_err(actix_web::error::ErrorInternalServerError)?;
+    .map_err(ErrorInternalServerError)?;
 
-    // TODO: Redirect to /login with information instead (use TemporaryRedirect).
-    Identity::login(&req.extensions(), id.to_string()).unwrap();
+    Auth::authenticate(&req, id)?;
+
     Ok(HttpResponse::SeeOther()
         .append_header((header::LOCATION, "/"))
         .finish())
 }
 
 #[delete("/user")]
-async fn del_user(pool: web::Data<DbPool>, user: Identity<i32>) -> Result<HttpResponse, Error> {
-    let user_id = user.id().unwrap();
+async fn del_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpResponse, Error> {
+    let user_id = user.0;
 
     let user = web::block(move || {
         let mut conn = pool.get()?;
         actions::delete_user(&mut conn, user_id)
     })
     .await?
-    .map_err(actix_web::error::ErrorInternalServerError)?;
+    .map_err(ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().json(user))
 }
@@ -88,7 +86,7 @@ async fn del_user(pool: web::Data<DbPool>, user: Identity<i32>) -> Result<HttpRe
 #[get("/login")]
 async fn login(
     pool: web::Data<DbPool>,
-    user: web::Form<UniqueUser>,
+    user: web::Json<UniqueUser>,
     req: HttpRequest,
 ) -> Result<HttpResponse, Error> {
     let User { id, .. } = web::block(move || {
@@ -96,9 +94,11 @@ async fn login(
         actions::credentials_get_user(&mut conn, user.0)
     })
     .await?
-    .map_err(actix_web::error::ErrorInternalServerError)?;
+    .map_err(ErrorInternalServerError)?;
 
-    Identity::login(&req.extensions(), id).unwrap();
+    Auth::authenticate(&req, id)?;
 
-    Ok(HttpResponse::Ok().finish())
+    Ok(HttpResponse::Ok()
+        .append_header((header::LOCATION, "/"))
+        .finish())
 }

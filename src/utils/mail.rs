@@ -1,25 +1,21 @@
-use lettre::message::SinglePart;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::response::Response;
-use lettre::transport::smtp::Error;
 use lettre::{Message, SmtpTransport, Transport};
 
-pub fn send_mail(to: &str, hash: String) -> Result<Response, Error> {
+use crate::actions::DbError;
+
+pub fn send_mail(to: &str, hash: String) -> Result<Response, DbError> {
     let email = Message::builder()
         .from("fofoporno <fofoprono@zohomail.eu>".parse().unwrap())
         .reply_to("Yuin <fofoprono@zohomail.eu>".parse().unwrap())
         .to(["Hei <", to, ">"].join("").parse().unwrap())
         .subject("Welcome to Fofoprono!")
-        .singlepart(SinglePart::html(
+        .body(
             [
-                "<form style='display: none' action='http://localhost:8080/signup/",
+                "Click this link to verify your account: http://localhost:8080/signup/",
                 &hash,
-                "' method='post'><button type='submit' id='button_to_link'>",
-                "</button>",
-                "</form>",
-                "<label style='text-decoration: underline' for='button_to_link'> Click here to verify rour account! </label>",
             ]
-            .join("")),
+            .join(""),
         )
         .unwrap();
 
@@ -34,5 +30,5 @@ pub fn send_mail(to: &str, hash: String) -> Result<Response, Error> {
         .build();
 
     // Send the email
-    mailer.send(&email)
+    mailer.send(&email).map_err(DbError::from)
 }

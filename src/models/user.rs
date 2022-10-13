@@ -26,7 +26,7 @@ pub struct UniqueUser {
 
 #[derive(Queryable, Serialize, Deserialize)]
 pub struct Hash {
-    pub uuid: String,
+    pub id: String,
     pub id_user: i32,
 }
 

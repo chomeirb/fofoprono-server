@@ -1,12 +1,13 @@
-pub mod actions;
-pub mod models;
-pub mod routes;
-pub mod schema;
-pub mod utils;
+mod actions;
+mod auth;
+mod models;
+mod routes;
+mod schema;
+mod utils;
+
 use std::env;
 
 use actix_cors::Cors;
-use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{cookie::Key, web, App, HttpServer};
 use diesel::{
@@ -38,7 +39,6 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(pool.clone()))
             .wrap(Cors::permissive())
-            .wrap(IdentityMiddleware::<i32>::default())
             .wrap(session_mw)
             .service(index)
             .service(signup_process)
