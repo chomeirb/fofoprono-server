@@ -1,26 +1,47 @@
 use std::{
     any::type_name,
     future::{ready, Ready},
+    time::Duration,
 };
 
-use actix_session::{SessionExt, SessionInsertError};
-use actix_web::{error, FromRequest};
-use serde::{de::DeserializeOwned, Serialize};
+use actix_session::{Session, SessionExt, SessionInsertError};
+use actix_web::{error, FromRequest, HttpRequest};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use time::OffsetDateTime;
 
-pub struct Auth<T>(pub T);
+pub struct Auth<T>(AuthInner<T>);
+
+struct AuthInner<T> {
+    data: T,
+    session: Session,
+}
 
 impl<T: Serialize + DeserializeOwned> Auth<T> {
-    pub fn authenticate(req: &actix_web::HttpRequest, val: T) -> Result<(), SessionInsertError> {
-        req.get_session().insert(Self::key(), val)
+    pub fn authenticate(req: &HttpRequest, val: T) -> Result<(), SessionInsertError> {
+        req.get_session().insert(T::data_key(), val)
     }
 
-    fn extract(req: &actix_web::HttpRequest) -> Option<Self> {
-        let value = req.get_session().get::<T>(&Self::key()).ok();
-        value.flatten().map(T::into)
+    pub fn logout(self) {
+        self.0.session.purge();
     }
 
-    fn key() -> String {
-        "Auth".to_owned() + type_name::<T>()
+    /// Access the underlying data.
+    pub fn get(self) -> T {
+        self.0.data
+    }
+}
+
+impl<T: Serialize + DeserializeOwned> AuthInner<T> {
+    fn extract(req: &HttpRequest) -> Option<Self> {
+        let session = req.get_session();
+        let data = session.get(&T::data_key()).ok();
+        data.flatten().map(|data| Self { data, session })
+    }
+}
+
+impl<T> From<AuthInner<T>> for Auth<T> {
+    fn from(inner: AuthInner<T>) -> Self {
+        Self(inner)
     }
 }
 
@@ -29,30 +50,47 @@ where
     T: Serialize + DeserializeOwned,
 {
     type Error = error::Error;
-
     type Future = Ready<Result<Self, Self::Error>>;
 
-    fn from_request(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Self::Future {
-        ready(Self::extract(req).ok_or_else(|| error::ErrorUnauthorized("")))
+    fn from_request(req: &HttpRequest, _: &mut actix_web::dev::Payload) -> Self::Future {
+        ready(
+            AuthInner::extract(req)
+                .map(Self::from)
+                .ok_or_else(|| error::ErrorUnauthorized("")),
+        )
     }
 }
 
-impl<T> From<T> for Auth<T> {
-    fn from(val: T) -> Self {
-        Self(val)
+trait AuthKey<T> {
+    fn data_key() -> String;
+    fn logged_in_key() -> String;
+}
+
+impl<T> AuthKey<T> for T {
+    fn data_key() -> String {
+        "auth.data#".to_owned() + type_name::<T>()
+    }
+
+    fn logged_in_key() -> String {
+        "auth.logged_in#".to_owned() + type_name::<T>()
     }
 }
 
-impl<T> std::ops::Deref for Auth<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
+#[derive(Serialize, Deserialize)]
+struct Deadline {
+    start: i64,
+    duration: Duration,
 }
 
-impl<T> std::ops::DerefMut for Auth<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+impl Deadline {
+    fn valid_for(duration: Duration) -> Self {
+        let start = OffsetDateTime::now_utc().unix_timestamp();
+        Self { start, duration }
+    }
+
+    fn is_valid(&self) -> bool {
+        let now = OffsetDateTime::now_utc();
+        let start = OffsetDateTime::from_unix_timestamp(self.start).expect("Overflowed time...");
+        now - start < self.duration
     }
 }

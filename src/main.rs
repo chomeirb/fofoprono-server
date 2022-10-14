@@ -44,6 +44,7 @@ async fn main() -> std::io::Result<()> {
             .service(signup_process)
             .service(signup_user)
             .service(login)
+            .service(logout)
             .service(get_user)
             .service(del_user)
             .service(add_prono)

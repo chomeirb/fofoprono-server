@@ -11,7 +11,7 @@ use actix_web::{error::ErrorInternalServerError, http::header, HttpRequest};
 #[get("/")]
 async fn index(user: Option<Auth<i32>>) -> HttpResponse {
     if let Some(user) = user {
-        HttpResponse::Ok().body(format!("Hello user {}", user.0))
+        HttpResponse::Ok().body(format!("Hello user {}", user.get()))
     } else {
         HttpResponse::Ok().body("Hello anonymous!")
     }
@@ -19,9 +19,10 @@ async fn index(user: Option<Auth<i32>>) -> HttpResponse {
 
 #[get("/user")]
 async fn get_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpResponse, Error> {
+    let id = user.get();
     let user = web::block(move || {
         let mut conn = pool.get()?;
-        actions::get_user(&mut conn, user.0)
+        actions::get_user(&mut conn, id)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
@@ -71,11 +72,10 @@ async fn signup_user(
 
 #[delete("/user")]
 async fn del_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpResponse, Error> {
-    let user_id = user.0;
-
+    let id = user.get();
     let user = web::block(move || {
         let mut conn = pool.get()?;
-        actions::delete_user(&mut conn, user_id)
+        actions::delete_user(&mut conn, id)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
@@ -99,6 +99,14 @@ async fn login(
     Auth::authenticate(&req, id)?;
 
     Ok(HttpResponse::Ok()
+        .append_header((header::LOCATION, "/"))
+        .finish())
+}
+
+#[get("/logout")]
+async fn logout(user: Auth<i32>) -> Result<HttpResponse, Error> {
+    user.logout();
+    Ok(HttpResponse::SeeOther()
         .append_header((header::LOCATION, "/"))
         .finish())
 }

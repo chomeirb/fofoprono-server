@@ -2,5 +2,6 @@
 /db-data
 .timetracker
 .env
+.fleet
 
 Cargo.lock
