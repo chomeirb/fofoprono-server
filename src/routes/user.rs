@@ -83,7 +83,7 @@ async fn del_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpRespon
     Ok(HttpResponse::Ok().json(user))
 }
 
-#[get("/login")]
+#[post("/login")]
 async fn login(
     pool: web::Data<DbPool>,
     user: web::Json<UniqueUser>,
@@ -99,7 +99,7 @@ async fn login(
     Auth::authenticate(&req, id)?;
 
     Ok(HttpResponse::Ok()
-        .append_header((header::LOCATION, "/"))
+        // .append_header((header::LOCATION, "/"))
         .finish())
 }
 
