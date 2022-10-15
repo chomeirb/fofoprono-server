@@ -66,7 +66,7 @@ async fn signup_user(
     Auth::authenticate(&req, id)?;
 
     Ok(HttpResponse::SeeOther()
-        .append_header((header::LOCATION, "/"))
+        .append_header((header::LOCATION, "/prono"))
         .finish())
 }
 
@@ -106,7 +106,7 @@ async fn login(
 #[get("/logout")]
 async fn logout(user: Auth<i32>) -> Result<HttpResponse, Error> {
     user.logout();
-    Ok(HttpResponse::SeeOther()
-        .append_header((header::LOCATION, "/"))
+    Ok(HttpResponse::Ok()
+        // .append_header((header::LOCATION, "/"))
         .finish())
 }
