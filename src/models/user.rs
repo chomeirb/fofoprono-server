@@ -1,7 +1,8 @@
+use crate::schema::{hashes as hashs, users};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Serialize, Deserialize)]
+#[derive(Queryable, Serialize, Deserialize, Identifiable)]
 pub struct User {
     pub id: i32,
 
@@ -17,21 +18,22 @@ pub struct User {
 }
 
 #[derive(Insertable, Serialize, Deserialize)]
-#[diesel(table_name = crate::schema::users)]
+#[diesel(table_name = users)]
 pub struct UniqueUser {
     pub name: String,
     pub mail: String,
     pub password: String,
 }
 
-#[derive(Queryable, Serialize, Deserialize)]
+#[derive(Queryable, Serialize, Deserialize, Identifiable, Associations)]
+#[diesel(belongs_to(User))]
 pub struct Hash {
     pub id: String,
-    pub id_user: i32,
+    pub user_id: i32,
 }
 
 #[derive(Insertable, Serialize, Deserialize)]
-#[diesel(table_name = crate::schema::hashes)]
+#[diesel(table_name = hashs)]
 pub struct NewHash {
-    pub id_user: i32,
+    pub user_id: i32,
 }

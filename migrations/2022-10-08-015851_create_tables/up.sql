@@ -32,14 +32,16 @@ CREATE TABLE games (
 CREATE TABLE pronos (
   id SERIAL PRIMARY KEY,
 
-  id_user INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  id_game INTEGER NOT NULL REFERENCES games(id),
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  game_id INTEGER NOT NULL REFERENCES games(id),
 
   prediction_home INTEGER NOT NULL CHECK (prediction_home >= 0),
-  prediction_away INTEGER NOT NULL CHECK (prediction_away >= 0)
+  prediction_away INTEGER NOT NULL CHECK (prediction_away >= 0),
+
+  CONSTRAINT game_prono UNIQUE (user_id, game_id)
 );
 
 CREATE TABLE hashes (
   id TEXT PRIMARY KEY DEFAULT md5(random()::text),
-  id_user INTEGER NOT NULL REFERENCES users(id)
+  user_id INTEGER NOT NULL REFERENCES users(id)
 )

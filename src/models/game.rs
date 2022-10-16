@@ -1,7 +1,8 @@
+use crate::schema::games;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Serialize, Deserialize)]
+#[derive(Identifiable, Queryable, Serialize, Deserialize)]
 pub struct Game {
     pub id: i32,
     pub time: i32,

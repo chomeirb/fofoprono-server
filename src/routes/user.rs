@@ -21,8 +21,8 @@ async fn index(user: Option<Auth<i32>>) -> HttpResponse {
 async fn get_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpResponse, Error> {
     let id = user.get();
     let user = web::block(move || {
-        let mut conn = pool.get()?;
-        actions::get_user(&mut conn, id)
+        let conn = &mut pool.get()?;
+        actions::get_user(conn, id)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
@@ -36,9 +36,9 @@ async fn signup_process(
     user: web::Json<UniqueUser>,
 ) -> Result<HttpResponse, Error> {
     web::block(move || {
-        let mut conn = pool.get()?;
-        let User { id, mail, .. } = actions::add_user(&mut conn, user.0)?;
-        let Hash { id, .. } = actions::add_hash(&mut conn, NewHash { id_user: id })?;
+        let conn = &mut pool.get()?;
+        let User { id, mail, .. } = actions::add_user(conn, user.0)?;
+        let Hash { id, .. } = actions::add_hash(conn, NewHash { user_id: id })?;
         send_mail(&mail, id)
     })
     .await?
@@ -47,18 +47,18 @@ async fn signup_process(
     Ok(HttpResponse::Ok().finish())
 }
 
-#[get("/signup/{uuid}")]
+#[get("/signup/{hash}")]
 async fn signup_user(
     pool: web::Data<DbPool>,
-    uuid: web::Path<String>,
+    hash: web::Path<String>,
     req: HttpRequest,
 ) -> Result<HttpResponse, Error> {
-    let uuid = uuid.into_inner();
+    let hash = hash.into_inner();
 
     let User { id, .. } = web::block(move || {
-        let mut conn = pool.get()?;
-        let Hash { id_user, .. } = actions::get_and_remove_hash(&mut conn, uuid)?;
-        actions::verify_user(&mut conn, id_user)
+        let conn = &mut pool.get()?;
+        let Hash { user_id, .. } = actions::get_and_remove_hash(conn, hash)?;
+        actions::verify_user(conn, user_id)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
@@ -74,8 +74,8 @@ async fn signup_user(
 async fn del_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpResponse, Error> {
     let id = user.get();
     let user = web::block(move || {
-        let mut conn = pool.get()?;
-        actions::delete_user(&mut conn, id)
+        let conn = &mut pool.get()?;
+        actions::delete_user(conn, id)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
@@ -90,8 +90,8 @@ async fn login(
     req: HttpRequest,
 ) -> Result<HttpResponse, Error> {
     let User { id, .. } = web::block(move || {
-        let mut conn = pool.get()?;
-        actions::credentials_get_user(&mut conn, user.0)
+        let conn = &mut pool.get()?;
+        actions::credentials_get_user(conn, user.0)
     })
     .await?
     .map_err(ErrorInternalServerError)?;

@@ -83,12 +83,12 @@ struct Deadline {
 }
 
 impl Deadline {
-    fn valid_for(duration: Duration) -> Self {
+    fn _valid_for(duration: Duration) -> Self {
         let start = OffsetDateTime::now_utc().unix_timestamp();
         Self { start, duration }
     }
 
-    fn is_valid(&self) -> bool {
+    fn _is_valid(&self) -> bool {
         let now = OffsetDateTime::now_utc();
         let start = OffsetDateTime::from_unix_timestamp(self.start).expect("Overflowed time...");
         now - start < self.duration
