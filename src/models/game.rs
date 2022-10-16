@@ -13,7 +13,7 @@ pub struct Game {
     pub score_home: Option<i32>,
     pub score_away: Option<i32>,
 
-    pub odds_home: f32,
-    pub odds_away: f32,
-    pub odds_draw: f32,
+    pub odds_home: f64,
+    pub odds_away: f64,
+    pub odds_draw: f64,
 }
