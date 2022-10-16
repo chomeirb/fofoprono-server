@@ -11,6 +11,13 @@ mod common {
         Insertable, RunQueryDsl, Table,
     };
 
+    pub fn get_rows<'a, T, M>(conn: &mut PgConnection, table: T) -> Result<Vec<M>, DbError>
+    where
+        T: LoadQuery<'a, PgConnection, M>,
+    {
+        Ok(table.load(conn)?)
+    }
+
     /// Finds a row of table T from a value of its primary key F.
     pub fn get_row<'a, T, M, F>(conn: &mut PgConnection, table: T, key: F) -> Result<M, DbError>
     where
@@ -44,8 +51,10 @@ mod common {
     }
 }
 
+mod game;
 mod prono;
 mod user;
 
+pub use game::*;
 pub use prono::*;
 pub use user::*;
