@@ -6,7 +6,12 @@ use crate::{
     utils::mail::send_mail,
 };
 
-use actix_web::{error::ErrorInternalServerError, http::header, HttpRequest};
+use actix_web::{
+    error::{self, ErrorInternalServerError},
+    http::header::{self, Header},
+    HttpRequest,
+};
+use actix_web_httpauth::headers::authorization::{Authorization, Basic};
 
 #[get("/")]
 async fn index(user: Option<Auth<i32>>) -> HttpResponse {
@@ -84,29 +89,31 @@ async fn del_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpRespon
 }
 
 #[post("/login")]
-async fn login(
-    pool: web::Data<DbPool>,
-    user: web::Json<UniqueUser>,
-    req: HttpRequest,
-) -> Result<HttpResponse, Error> {
+async fn login(pool: web::Data<DbPool>, req: HttpRequest) -> Result<HttpResponse, Error> {
+    let auth = Authorization::<Basic>::parse(&req)?;
+    let basic = auth.as_ref();
+    let (name, password) = (
+        basic.user_id().to_owned(),
+        basic
+            .password()
+            .ok_or_else(|| error::ErrorUnauthorized(""))?
+            .to_owned(),
+    );
+
     let User { id, .. } = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::credentials_get_user(conn, user.0)
+        actions::credentials_get_user2(conn, name, password)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
 
     Auth::authenticate(&req, id)?;
 
-    Ok(HttpResponse::Ok()
-        // .append_header((header::LOCATION, "/"))
-        .finish())
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[get("/logout")]
 async fn logout(user: Auth<i32>) -> Result<HttpResponse, Error> {
     user.logout();
-    Ok(HttpResponse::Ok()
-        // .append_header((header::LOCATION, "/"))
-        .finish())
+    Ok(HttpResponse::Ok().finish())
 }

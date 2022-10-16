@@ -55,7 +55,6 @@ async fn main() -> std::io::Result<()> {
                     .service(get_user)
                     .service(del_user)
                     .service(add_pronos)
-                    // .service(get_pronos)
                     .service(get_games),
             )
             .service(

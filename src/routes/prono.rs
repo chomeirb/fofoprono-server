@@ -48,5 +48,9 @@ async fn get_games(
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Ok().json(games))
+    if id.is_some() {
+        Ok(HttpResponse::Ok().json(games))
+    } else {
+        Ok(HttpResponse::NonAuthoritativeInformation().json(games))
+    }
 }

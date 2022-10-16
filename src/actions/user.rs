@@ -11,14 +11,18 @@ pub fn get_user(conn: &mut PgConnection, user_id: i32) -> Result<User, DbError> 
     get_row(conn, user::users, user_id)
 }
 
-pub fn credentials_get_user(conn: &mut PgConnection, user: UniqueUser) -> Result<User, DbError> {
+pub fn credentials_get_user2(
+    conn: &mut PgConnection,
+    name: String,
+    password: String,
+) -> Result<User, DbError> {
     Ok(user::users
         .filter(
             user::active.eq(true).and(
                 user::name
-                    .eq(user.name)
-                    .or(user::mail.eq(user.mail))
-                    .and(user::password.eq(user.password)),
+                    .eq(name)
+                    // .or(user::mail.eq(user.mail))
+                    .and(user::password.eq(password)),
             ),
         )
         .get_result(conn)?)
