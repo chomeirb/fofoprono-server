@@ -55,6 +55,7 @@ async fn main() -> std::io::Result<()> {
                     .service(add_pronos)
                     .service(delete_pronos)
                     .service(get_games),
+
             )
             .service(
                 actix_files::Files::new("/", static_files.clone())

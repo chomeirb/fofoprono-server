@@ -11,3 +11,4 @@ mod user;
 
 pub use prono::*;
 pub use user::*;
+pub use game::*;

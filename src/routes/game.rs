@@ -2,7 +2,7 @@ use actix_web::error::ErrorInternalServerError;
 
 use crate::{actions, routes::common::*};
 
-#[get("/game/")]
+#[get("/game")]
 async fn get_games(pool: web::Data<DbPool>) -> Result<HttpResponse, Error> {
     let games = web::block(move || {
         let mut conn = pool.get()?;
