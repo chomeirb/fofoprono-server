@@ -5,6 +5,7 @@ mod common {
     pub type DbPool = r2d2::Pool<r2d2::ConnectionManager<diesel::PgConnection>>;
 }
 
+mod game;
 mod prono;
 mod user;
 
