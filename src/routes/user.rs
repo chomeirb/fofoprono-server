@@ -112,7 +112,7 @@ async fn login(pool: web::Data<DbPool>, req: HttpRequest) -> Result<HttpResponse
     Ok(HttpResponse::Ok().finish())
 }
 
-#[get("/logout")]
+#[post("/logout")]
 async fn logout(user: Auth<i32>) -> Result<HttpResponse, Error> {
     user.logout();
     Ok(HttpResponse::Ok().finish())
