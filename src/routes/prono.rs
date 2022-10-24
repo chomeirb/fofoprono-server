@@ -5,32 +5,27 @@ use crate::{
     routes::common::*,
 };
 
-#[post("/prono/{id_user}/{id_game}")]
+#[post("/prono")]
 async fn add_pronos(
     pool: web::Data<DbPool>,
-    ids: web::Path<(i32, i32)>,
-    req: web::Json<(i32, i32)>,
+    user: Auth<i32>,
+    req: web::Json<Vec<Prediction>>,
 ) -> Result<HttpResponse, Error> {
-    let ((user_id, game_id), (prediction_home, prediction_away)) =
-        (ids.into_inner(), req.into_inner());
+    let (user_id, predictions) = (user.get(), req.into_inner());
 
-    let prono = NewProno {
+    let pronos = predictions.into_iter().map(move |prediction| NewProno {
         user_id,
-        prediction: Prediction {
-            game_id,
-            prediction_home,
-            prediction_away,
-        },
-    };
+        prediction,
+    });
 
-    let user = web::block(move || {
+    let pronos = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::add_prono(conn, prono)
+        actions::process_pronos(conn, pronos)
     })
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Ok().json(user))
+    Ok(HttpResponse::Ok().json(pronos))
 }
 
 /// Fetches games AND user pronos if authentified (otherwise pronos are null) in a tuple.
@@ -43,7 +38,7 @@ async fn get_games(
 
     let games = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::get_prono(conn, id)
+        actions::get_pronos(conn, id)
     })
     .await?
     .map_err(actix_web::error::ErrorInternalServerError)?;

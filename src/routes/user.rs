@@ -102,7 +102,7 @@ async fn login(pool: web::Data<DbPool>, req: HttpRequest) -> Result<HttpResponse
 
     let User { id, .. } = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::credentials_get_user2(conn, name, password)
+        actions::credentials_get_user(conn, name, password)
     })
     .await?
     .map_err(ErrorInternalServerError)?;

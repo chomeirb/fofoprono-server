@@ -15,7 +15,7 @@ pub struct Prono {
     pub prediction_away: i32,
 }
 
-#[derive(Insertable, Serialize, Deserialize)]
+#[derive(Insertable, Serialize, Deserialize, Clone, Copy)]
 #[diesel(table_name = pronos)]
 pub struct NewProno {
     pub user_id: i32,
@@ -23,7 +23,7 @@ pub struct NewProno {
     pub prediction: Prediction,
 }
 
-#[derive(Queryable, Insertable, Serialize, Deserialize, Associations)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Associations, Clone, Copy)]
 #[diesel(table_name = pronos)]
 #[diesel(belongs_to(Game))]
 pub struct Prediction {

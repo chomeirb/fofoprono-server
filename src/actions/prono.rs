@@ -8,11 +8,36 @@ use crate::{
 
 use super::get_games;
 
-pub fn add_prono(conn: &mut PgConnection, prono: NewProno) -> Result<Prono, DbError> {
+fn add_prono(conn: &mut PgConnection, prono: NewProno) -> Result<Prono, DbError> {
     add_row(conn, prono::pronos, prono)
 }
 
-pub fn get_prono(
+fn update_prono(conn: &mut PgConnection, prono: NewProno) -> Result<Prono, DbError> {
+    let pred = prono.prediction;
+    Ok(diesel::update(
+        prono::pronos.filter(
+            prono::user_id
+                .eq(prono.user_id)
+                .and(prono::game_id.eq(pred.game_id)),
+        ),
+    )
+    .set((
+        prono::prediction_home.eq(pred.prediction_home),
+        prono::prediction_away.eq(pred.prediction_away),
+    ))
+    .get_result(conn)?)
+}
+
+pub fn process_pronos(
+    conn: &mut PgConnection,
+    pronos: impl Iterator<Item = NewProno>,
+) -> Result<Vec<Prono>, DbError> {
+    pronos
+        .map(|prono| update_prono(conn, prono).or_else(|_| add_prono(conn, prono)))
+        .collect()
+}
+
+pub fn get_pronos(
     conn: &mut PgConnection,
     user_id: Option<i32>,
 ) -> Result<Vec<(Option<Prediction>, Game)>, DbError> {
