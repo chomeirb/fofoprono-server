@@ -4,10 +4,8 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Serialize, Deserialize, Identifiable, Associations)]
-#[diesel(belongs_to(User), belongs_to(Game))]
+#[diesel(belongs_to(User), belongs_to(Game), primary_key(user_id, game_id))]
 pub struct Prono {
-    pub id: i32,
-
     pub user_id: i32,
     pub game_id: i32,
 
@@ -17,7 +15,7 @@ pub struct Prono {
 
 #[derive(Insertable, Serialize, Deserialize, Clone, Copy)]
 #[diesel(table_name = pronos)]
-pub struct NewProno {
+pub struct UniqueProno {
     pub user_id: i32,
     #[diesel(embed)]
     pub prediction: Prediction,

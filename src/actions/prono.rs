@@ -2,23 +2,21 @@ use diesel::prelude::*;
 
 use crate::{
     actions::common::*,
-    models::{Game, NewProno, Prediction, Prono},
+    models::{Game, UniqueProno, Prediction, Prono},
     schema::pronos::dsl as prono,
 };
 
 use super::get_games;
 
 pub fn get_prono(conn: &mut PgConnection, user_id: i32, game_id: i32) -> Result<Prono, DbError> {
-    Ok(prono::pronos
-        .filter(prono::user_id.eq(user_id).and(prono::game_id.eq(game_id)))
-        .get_result(conn)?)
+    get_row(conn, prono::pronos, (user_id, game_id))
 }
 
-fn add_prono(conn: &mut PgConnection, prono: NewProno) -> Result<Prono, DbError> {
+fn add_prono(conn: &mut PgConnection, prono: UniqueProno) -> Result<Prono, DbError> {
     add_row(conn, prono::pronos, prono)
 }
 
-fn update_prono(conn: &mut PgConnection, prono: NewProno) -> Result<Prono, DbError> {
+fn update_prono(conn: &mut PgConnection, prono: UniqueProno) -> Result<Prono, DbError> {
     let pred = prono.prediction;
     Ok(
         diesel::update(&get_prono(conn, prono.user_id, pred.game_id)?)
@@ -32,21 +30,21 @@ fn update_prono(conn: &mut PgConnection, prono: NewProno) -> Result<Prono, DbErr
 
 pub fn process_pronos(
     conn: &mut PgConnection,
-    pronos: impl Iterator<Item = NewProno>,
+    pronos: impl Iterator<Item = UniqueProno>,
 ) -> Result<Vec<Prono>, DbError> {
     pronos
         .map(|prono| update_prono(conn, prono).or_else(|_| add_prono(conn, prono)))
         .collect()
 }
 
-pub fn delete_prono(conn: &mut PgConnection, prono: NewProno) -> Result<Prono, DbError> {
+pub fn delete_prono(conn: &mut PgConnection, prono: UniqueProno) -> Result<Prono, DbError> {
     let pred = prono.prediction;
     Ok(diesel::delete(&get_prono(conn, prono.user_id, pred.game_id)?).get_result(conn)?)
 }
 
 pub fn delete_pronos(
     conn: &mut PgConnection,
-    pronos: impl Iterator<Item = NewProno>,
+    pronos: impl Iterator<Item = UniqueProno>,
 ) -> Result<Vec<Prono>, DbError> {
     pronos.map(|prono| delete_prono(conn, prono)).collect()
 }

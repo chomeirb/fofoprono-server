@@ -1,7 +1,7 @@
 use crate::{
     actions,
     auth::Auth,
-    models::{NewProno, Prediction},
+    models::{UniqueProno, Prediction},
     routes::common::*,
 };
 
@@ -13,7 +13,7 @@ async fn add_pronos(
 ) -> Result<HttpResponse, Error> {
     let (user_id, predictions) = (user.get(), req.into_inner());
 
-    let pronos = predictions.into_iter().map(move |prediction| NewProno {
+    let pronos = predictions.into_iter().map(move |prediction| UniqueProno {
         user_id,
         prediction,
     });
@@ -36,7 +36,7 @@ async fn delete_pronos(
 ) -> Result<HttpResponse, Error> {
     let (user_id, predictions) = (user.get(), req.into_inner());
 
-    let pronos = predictions.into_iter().map(move |prediction| NewProno {
+    let pronos = predictions.into_iter().map(move |prediction| UniqueProno {
         user_id,
         prediction,
     });
