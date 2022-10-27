@@ -36,8 +36,6 @@ async fn main() -> std::io::Result<()> {
             SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
                 // disable secure cookie for local testing
                 .cookie_http_only(true)
-                // .cookie_domain(Some("localhost".to_owned()))
-                // .cookie_same_site(actix_web::cookie::SameSite::None)
                 .cookie_secure(false)
                 .build();
 

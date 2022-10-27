@@ -12,7 +12,7 @@ pub fn send_mail(to: &str, hash: String) -> Result<Response, DbError> {
         .subject("Welcome to Fofoprono!")
         .body(
             [
-                "Click this link to verify your account: http://localhost:8080/signup/",
+                "Click this link to verify your account: http://localhost:8080/api/signup/",
                 &hash,
             ]
             .join(""),

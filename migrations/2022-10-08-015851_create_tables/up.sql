@@ -10,7 +10,9 @@ CREATE TABLE users (
   results_good INT NOT NULL DEFAULT 0,
   results_perfect INT NOT NULL DEFAULT 0,
 
-  active BOOLEAN NOT NULL DEFAULT false
+  active BOOLEAN NOT NULL DEFAULT false,
+
+  CONSTRAINT user_mail UNIQUE (mail)
 );
 
 CREATE TABLE games (
@@ -41,5 +43,5 @@ CREATE TABLE pronos (
 
 CREATE TABLE hashes (
   id TEXT PRIMARY KEY DEFAULT md5(random()::text),
-  user_id INTEGER NOT NULL REFERENCES users(id)
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
 )
