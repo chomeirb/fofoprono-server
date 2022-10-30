@@ -25,7 +25,7 @@ CREATE TABLE games (
 
   score_home INTEGER,
   score_away INTEGER,
-  
+
   odds_home FLOAT NOT NULL,
   odds_away FLOAT NOT NULL,
   odds_draw FLOAT NOT NULL
@@ -44,4 +44,30 @@ CREATE TABLE pronos (
 CREATE TABLE hashes (
   id TEXT PRIMARY KEY DEFAULT md5(random()::text),
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
-)
+);
+
+-- Create a trigger to compute the score of a user when a match result is updated
+CREATE OR REPLACE FUNCTION update_score() RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE users SET score = (
+    SELECT SUM(
+      CASE
+        WHEN pronos.prediction_home = games.score_home AND pronos.prediction_away = games.score_away THEN 3
+        WHEN pronos.prediction_home > pronos.prediction_away AND games.score_home > games.score_away THEN 1
+        WHEN pronos.prediction_home < pronos.prediction_away AND games.score_home < games.score_away THEN 1
+        WHEN pronos.prediction_home = pronos.prediction_away AND games.score_home = games.score_away THEN 1
+        ELSE 0
+      END
+    ) FROM pronos, games WHERE pronos.user_id = users.id AND pronos.game_id = games.id
+  ) WHERE users.id = NEW.id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_score
+  AFTER UPDATE OF score_home, score_away
+  ON games
+  FOR EACH ROW
+  EXECUTE PROCEDURE update_score();
+
+
