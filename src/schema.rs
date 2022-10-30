@@ -28,6 +28,7 @@ diesel::table! {
         game_id -> Int4,
         prediction_home -> Int4,
         prediction_away -> Int4,
+        result -> Text,
     }
 }
 

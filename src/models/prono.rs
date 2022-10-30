@@ -11,9 +11,11 @@ pub struct Prono {
 
     pub prediction_home: i32,
     pub prediction_away: i32,
+
+    pub result: String,
 }
 
-#[derive(Insertable, Serialize, Deserialize, Clone, Copy)]
+#[derive(Insertable, Serialize, Deserialize, Clone)]
 #[diesel(table_name = pronos)]
 pub struct UniqueProno {
     pub user_id: i32,
@@ -21,11 +23,12 @@ pub struct UniqueProno {
     pub prediction: Prediction,
 }
 
-#[derive(Queryable, Insertable, Serialize, Deserialize, Associations, Clone, Copy)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Associations, Clone)]
 #[diesel(table_name = pronos)]
 #[diesel(belongs_to(Game))]
 pub struct Prediction {
     pub game_id: i32,
     pub prediction_home: i32,
     pub prediction_away: i32,
+    pub result: String,
 }

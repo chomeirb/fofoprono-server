@@ -38,7 +38,9 @@ CREATE TABLE pronos (
   game_id INTEGER NOT NULL REFERENCES games(id),
 
   prediction_home INTEGER NOT NULL CHECK (prediction_home >= 0),
-  prediction_away INTEGER NOT NULL CHECK (prediction_away >= 0)
+  prediction_away INTEGER NOT NULL CHECK (prediction_away >= 0),
+
+  result TEXT NOT NULL
 );
 
 CREATE TABLE hashes (

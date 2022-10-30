@@ -33,7 +33,7 @@ pub fn process_pronos(
     pronos: impl Iterator<Item = UniqueProno>,
 ) -> Result<Vec<Prono>, DbError> {
     pronos
-        .map(|prono| update_prono(conn, prono).or_else(|_| add_prono(conn, prono)))
+        .map(|prono| update_prono(conn, prono.clone()).or_else(|_| add_prono(conn, prono)))
         .collect()
 }
 
@@ -62,6 +62,7 @@ pub fn get_pronos(
                 prono::game_id,
                 prono::prediction_home,
                 prono::prediction_away,
+                prono::result,
             ))
             .load(conn)?
     } else {
