@@ -35,14 +35,14 @@ VALUES (162, '1/4', 'Pays-Bas', 'Croatie', 1, 1, 1.5, 2.5, 3.5);
 INSERT INTO games (time, stage, team_home, team_away, score_home, score_away, odds_home, odds_away, odds_draw)
 VALUES (162, '1/4', 'Danemark', 'Suède', 1, 1, 1.5, 2.5, 3.5);
 
-INSERT INTO games (time, stage, team_home, team_away, score_home, score_away, odds_home, odds_away, odds_draw)
-VALUES (162, '1/2', 'France', 'Portugal', 1, 1, 1.5, 2.5, 3.5);
+INSERT INTO games (time, stage, team_home, team_away, odds_home, odds_away, odds_draw)
+VALUES (162, '1/2', 'France', 'Portugal', 1.5, 2.5, 3.5);
 
-INSERT INTO games (time, stage, team_home, team_away, score_home, score_away, odds_home, odds_away, odds_draw)
-VALUES (162, '1/2', 'Pays-Bas', 'Danemark', 1, 1, 1.5, 2.5, 3.5);
+INSERT INTO games (time, stage, team_home, team_away, odds_home, odds_away, odds_draw)
+VALUES (1687138309, '1/2', 'Pays-Bas', 'Danemark', 1.5, 2.5, 3.5);
 
-INSERT INTO games (time, stage, team_home, team_away, score_home, score_away, odds_home, odds_away, odds_draw)
-VALUES (162, 'Finale', 'France', 'Pays-Bas', 1, 1, 1.5, 2.5, 3.5);
+INSERT INTO games (time, stage, team_home, team_away, odds_home, odds_away, odds_draw)
+VALUES (1687138309, 'Finale', 'France', 'Pays-Bas', 1.5, 2.5, 3.5);
 
 
 
