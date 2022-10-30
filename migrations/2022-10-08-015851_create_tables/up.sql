@@ -52,7 +52,7 @@ CREATE TABLE hashes (
 CREATE OR REPLACE FUNCTION update_score() RETURNS TRIGGER AS $$
 BEGIN
   UPDATE users SET score = (
-    SELECT SUM(
+    SELECT COALESCE(SUM(
       CASE
         WHEN pronos.prediction_home = games.score_home AND pronos.prediction_away = games.score_away THEN 3
         WHEN pronos.prediction_home > pronos.prediction_away AND games.score_home > games.score_away THEN 1
@@ -60,8 +60,21 @@ BEGIN
         WHEN pronos.prediction_home = pronos.prediction_away AND games.score_home = games.score_away THEN 1
         ELSE 0
       END
-    ) FROM pronos, games WHERE pronos.user_id = users.id AND pronos.game_id = games.id
-  ) WHERE users.id = NEW.id;
+    ), 0) FROM pronos, games WHERE pronos.user_id = users.id AND pronos.game_id = games.id
+  );
+
+  UPDATE pronos SET result = (
+    SELECT
+      CASE
+        WHEN pronos.prediction_home = games.score_home AND pronos.prediction_away = games.score_away THEN 'exact'
+        WHEN pronos.prediction_home > pronos.prediction_away AND games.score_home > games.score_away THEN 'correct'
+        WHEN pronos.prediction_home < pronos.prediction_away AND games.score_home < games.score_away THEN 'correct'
+        WHEN pronos.prediction_home = pronos.prediction_away AND games.score_home = games.score_away THEN 'correct'
+        ELSE 'wrong'
+      END
+    FROM games WHERE pronos.game_id = games.id
+  );
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -71,5 +84,3 @@ CREATE TRIGGER update_score
   ON games
   FOR EACH ROW
   EXECUTE PROCEDURE update_score();
-
-
