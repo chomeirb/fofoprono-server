@@ -9,4 +9,4 @@ INSERT INTO pronos (user_id, game_id, prediction_home, prediction_away, result)
 VALUES (1, 3, 3, 1, 'wrong');
 
 INSERT INTO pronos (user_id, game_id, prediction_home, prediction_away, result)
-VALUES (2, 1, 2, 1, 'none');
+VALUES (2, 1, 2, 1, null);

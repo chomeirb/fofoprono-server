@@ -15,10 +15,12 @@ CREATE TABLE users (
   CONSTRAINT user_mail UNIQUE (mail)
 );
 
+CREATE TYPE STAGE AS ENUM ('group', 'sixteen', 'quarter', 'semi', 'final');
+
 CREATE TABLE games (
   id SERIAL PRIMARY KEY,
-  time INTEGER NOT NULL,
-  stage VARCHAR(20) NOT NULL,
+  time TIMESTAMP NOT NULL,
+  stage STAGE NOT NULL,
 
   team_home VARCHAR(20) NOT NULL,
   team_away VARCHAR(20) NOT NULL,
@@ -31,16 +33,17 @@ CREATE TABLE games (
   odds_draw FLOAT NOT NULL
 );
 
+CREATE TYPE RESULT AS ENUM ('exact', 'correct', 'wrong');
+
 CREATE TABLE pronos (
   PRIMARY KEY(user_id, game_id),
-
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   game_id INTEGER NOT NULL REFERENCES games(id),
 
   prediction_home INTEGER NOT NULL CHECK (prediction_home >= 0),
   prediction_away INTEGER NOT NULL CHECK (prediction_away >= 0),
 
-  result TEXT NOT NULL
+  result RESULT
 );
 
 CREATE TABLE hashes (
@@ -49,28 +52,17 @@ CREATE TABLE hashes (
 );
 
 -- Create a trigger to compute the score of a user when a match result is updated
-CREATE OR REPLACE FUNCTION update_score() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION update_result() RETURNS TRIGGER AS $$
 BEGIN
-  UPDATE users SET score = (
-    SELECT COALESCE(SUM(
-      CASE
-        WHEN pronos.prediction_home = games.score_home AND pronos.prediction_away = games.score_away THEN 3
-        WHEN pronos.prediction_home > pronos.prediction_away AND games.score_home > games.score_away THEN 1
-        WHEN pronos.prediction_home < pronos.prediction_away AND games.score_home < games.score_away THEN 1
-        WHEN pronos.prediction_home = pronos.prediction_away AND games.score_home = games.score_away THEN 1
-        ELSE 0
-      END
-    ), 0) FROM pronos, games WHERE pronos.user_id = users.id AND pronos.game_id = games.id
-  );
-
   UPDATE pronos SET result = (
     SELECT
       CASE
-        WHEN pronos.prediction_home = games.score_home AND pronos.prediction_away = games.score_away THEN 'exact'
-        WHEN pronos.prediction_home > pronos.prediction_away AND games.score_home > games.score_away THEN 'correct'
-        WHEN pronos.prediction_home < pronos.prediction_away AND games.score_home < games.score_away THEN 'correct'
-        WHEN pronos.prediction_home = pronos.prediction_away AND games.score_home = games.score_away THEN 'correct'
-        ELSE 'wrong'
+        WHEN games.score_home IS NULL OR games.score_away IS NULL then NULL
+        WHEN pronos.prediction_home = games.score_home AND pronos.prediction_away = games.score_away THEN 'exact'::RESULT
+        WHEN pronos.prediction_home > pronos.prediction_away AND games.score_home > games.score_away THEN 'correct'::RESULT
+        WHEN pronos.prediction_home < pronos.prediction_away AND games.score_home < games.score_away THEN 'correct'::RESULT
+        WHEN pronos.prediction_home = pronos.prediction_away AND games.score_home = games.score_away THEN 'correct'::RESULT
+        ELSE 'wrong'::RESULT
       END
     FROM games WHERE pronos.game_id = games.id
   );
@@ -79,8 +71,26 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE TRIGGER update_result
+  AFTER UPDATE OF score_home, score_away ON games
+  FOR EACH ROW EXECUTE PROCEDURE update_result();
+
+CREATE OR REPLACE FUNCTION update_score() RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE users SET score = (
+    SELECT COALESCE(SUM(
+      CASE
+        WHEN pronos.result = 'exact' THEN 3
+        WHEN pronos.result = 'correct' THEN 1
+        ELSE 0
+      END
+    ), 0) FROM pronos WHERE pronos.user_id = users.id
+  );
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER update_score
-  AFTER UPDATE OF score_home, score_away
-  ON games
-  FOR EACH ROW
-  EXECUTE PROCEDURE update_score();
+  AFTER UPDATE OF result ON pronos
+  FOR EACH ROW EXECUTE PROCEDURE update_score();

@@ -1,9 +1,18 @@
 use crate::models::{Game, User};
 use crate::schema::pronos;
 use diesel::prelude::*;
+use diesel_derive_enum::DbEnum;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Serialize, Deserialize, Identifiable, Associations)]
+#[derive(Serialize, Deserialize, Debug, DbEnum, Clone)]
+#[DieselTypePath = "crate::schema::sql_types::Result"]
+pub enum Result {
+    Exact,
+    Correct,
+    Wrong,
+}
+
+#[derive(Queryable, Insertable, Serialize, Deserialize, Identifiable, Associations, Clone)]
 #[diesel(belongs_to(User), belongs_to(Game), primary_key(user_id, game_id))]
 pub struct Prono {
     pub user_id: i32,
@@ -12,23 +21,64 @@ pub struct Prono {
     pub prediction_home: i32,
     pub prediction_away: i32,
 
-    pub result: String,
+    pub result: Option<Result>,
 }
 
-#[derive(Insertable, Serialize, Deserialize, Clone)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Clone)]
 #[diesel(table_name = pronos)]
-pub struct UniqueProno {
-    pub user_id: i32,
+pub struct PredictionResult {
     #[diesel(embed)]
     pub prediction: Prediction,
+    pub result: Option<Result>,
 }
 
-#[derive(Queryable, Insertable, Serialize, Deserialize, Associations, Clone)]
+// Not able to have embedded foreign key with belongs_to associations: duplicate data
+#[derive(Insertable, Serialize, Deserialize, Clone, Copy)]
 #[diesel(table_name = pronos)]
-#[diesel(belongs_to(Game))]
 pub struct Prediction {
     pub game_id: i32,
     pub prediction_home: i32,
     pub prediction_away: i32,
-    pub result: String,
+}
+
+impl From<Prono> for PredictionResult {
+    fn from(
+        Prono {
+            game_id,
+            prediction_home,
+            prediction_away,
+            result,
+            ..
+        }: Prono,
+    ) -> Self {
+        Self {
+            prediction: Prediction {
+                game_id,
+                prediction_home,
+                prediction_away,
+            },
+            result,
+        }
+    }
+}
+
+impl From<(i32, Prediction)> for Prono {
+    fn from(
+        (
+            user_id,
+            Prediction {
+                game_id,
+                prediction_home,
+                prediction_away,
+            },
+        ): (i32, Prediction),
+    ) -> Self {
+        Self {
+            user_id,
+            game_id,
+            prediction_home,
+            prediction_away,
+            result: None,
+        }
+    }
 }

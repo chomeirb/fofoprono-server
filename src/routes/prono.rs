@@ -1,7 +1,7 @@
 use crate::{
     actions,
     auth::Auth,
-    models::{UniqueProno, Prediction},
+    models::{Prediction, Prono},
     routes::common::*,
 };
 
@@ -13,10 +13,9 @@ async fn add_pronos(
 ) -> Result<HttpResponse, Error> {
     let (user_id, predictions) = (user.get(), req.into_inner());
 
-    let pronos = predictions.into_iter().map(move |prediction| UniqueProno {
-        user_id,
-        prediction,
-    });
+    let pronos = predictions
+        .into_iter()
+        .map(move |prediction| Prono::from((user_id, prediction)));
 
     let pronos = web::block(move || {
         let conn = &mut pool.get()?;
@@ -36,10 +35,9 @@ async fn delete_pronos(
 ) -> Result<HttpResponse, Error> {
     let (user_id, predictions) = (user.get(), req.into_inner());
 
-    let pronos = predictions.into_iter().map(move |prediction| UniqueProno {
-        user_id,
-        prediction,
-    });
+    let pronos = predictions
+        .into_iter()
+        .map(move |prediction| Prono::from((user_id, prediction)));
 
     let pronos = web::block(move || {
         let conn = &mut pool.get()?;

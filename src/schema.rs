@@ -1,10 +1,23 @@
 // @generated automatically by Diesel CLI.
 
+pub mod sql_types {
+    #[derive(diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "result"))]
+    pub struct Result;
+
+    #[derive(diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "stage"))]
+    pub struct Stage;
+}
+
 diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::Stage;
+
     games (id) {
         id -> Int4,
-        time -> Int4,
-        stage -> Varchar,
+        time -> Timestamp,
+        stage -> Stage,
         team_home -> Varchar,
         team_away -> Varchar,
         score_home -> Nullable<Int4>,
@@ -23,12 +36,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::Result;
+
     pronos (user_id, game_id) {
         user_id -> Int4,
         game_id -> Int4,
         prediction_home -> Int4,
         prediction_away -> Int4,
-        result -> Text,
+        result -> Nullable<Result>,
     }
 }
 
