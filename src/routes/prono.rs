@@ -1,9 +1,4 @@
-use crate::{
-    actions,
-    auth::Auth,
-    models::{Prediction, Prono},
-    routes::common::*,
-};
+use crate::routes::common::*;
 
 #[post("/prono")]
 async fn add_pronos(
@@ -22,7 +17,7 @@ async fn add_pronos(
         actions::process_pronos(conn, pronos)
     })
     .await?
-    .map_err(actix_web::error::ErrorInternalServerError)?;
+    .map_err(ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().json(pronos))
 }
@@ -44,7 +39,7 @@ async fn delete_pronos(
         actions::delete_pronos(conn, pronos)
     })
     .await?
-    .map_err(actix_web::error::ErrorInternalServerError)?;
+    .map_err(ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().json(pronos))
 }
@@ -62,7 +57,7 @@ async fn get_games(
         actions::get_pronos(conn, id)
     })
     .await?
-    .map_err(actix_web::error::ErrorInternalServerError)?;
+    .map_err(ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().json(games))
 }

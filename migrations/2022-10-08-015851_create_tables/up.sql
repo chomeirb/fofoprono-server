@@ -77,10 +77,27 @@ CREATE TRIGGER update_result
 
 CREATE OR REPLACE FUNCTION update_score() RETURNS TRIGGER AS $$
 BEGIN
-  UPDATE users SET score = (
+  UPDATE users SET
+  score = (
     SELECT COALESCE(SUM(
       CASE
         WHEN pronos.result = 'exact' THEN 3
+        WHEN pronos.result = 'correct' THEN 1
+        ELSE 0
+      END
+    ), 0) FROM pronos WHERE pronos.user_id = users.id
+  ),
+  results_perfect = (
+    SELECT COALESCE(SUM(
+      CASE
+        WHEN pronos.result = 'exact' THEN 1
+        ELSE 0
+      END
+    ), 0) FROM pronos WHERE pronos.user_id = users.id
+  ),
+  results_good = (
+    SELECT COALESCE(SUM(
+      CASE
         WHEN pronos.result = 'correct' THEN 1
         ELSE 0
       END

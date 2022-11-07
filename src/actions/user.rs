@@ -7,6 +7,10 @@ use crate::{
     schema::users::dsl as user,
 };
 
+pub fn get_user_scores(conn: &mut PgConnection) -> Result<Vec<User>, DbError> {
+    get_rows(conn, user::users)
+}
+
 pub fn get_user(conn: &mut PgConnection, user_id: i32) -> Result<User, DbError> {
     get_row(conn, user::users, user_id)
 }

@@ -17,6 +17,34 @@ pub struct User {
     pub active: bool,
 }
 
+#[derive(Queryable, Serialize, Deserialize)]
+pub struct UserScore {
+    pub name: String,
+
+    pub score: i32,
+    pub results_good: i32,
+    pub results_perfect: i32,
+}
+
+impl From<User> for UserScore {
+    fn from(
+        User {
+            name,
+            score,
+            results_good,
+            results_perfect,
+            ..
+        }: User,
+    ) -> Self {
+        Self {
+            name,
+            score,
+            results_good,
+            results_perfect,
+        }
+    }
+}
+
 #[derive(Insertable, Serialize, Deserialize)]
 #[diesel(table_name = users)]
 pub struct UniqueUser {

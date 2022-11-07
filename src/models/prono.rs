@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, DbEnum, Clone)]
 #[DieselTypePath = "crate::schema::sql_types::Result"]
-pub enum Result {
+pub enum PredictionResult {
     Exact,
     Correct,
     Wrong,
@@ -21,15 +21,15 @@ pub struct Prono {
     pub prediction_home: i32,
     pub prediction_away: i32,
 
-    pub result: Option<Result>,
+    pub result: Option<PredictionResult>,
 }
 
 #[derive(Queryable, Insertable, Serialize, Deserialize, Clone)]
 #[diesel(table_name = pronos)]
-pub struct PredictionResult {
+pub struct PronoResult {
     #[diesel(embed)]
     pub prediction: Prediction,
-    pub result: Option<Result>,
+    pub result: Option<PredictionResult>,
 }
 
 // Not able to have embedded foreign key with belongs_to associations: duplicate data
@@ -41,7 +41,7 @@ pub struct Prediction {
     pub prediction_away: i32,
 }
 
-impl From<Prono> for PredictionResult {
+impl From<Prono> for PronoResult {
     fn from(
         Prono {
             game_id,

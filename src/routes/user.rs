@@ -1,16 +1,5 @@
-use crate::{
-    actions,
-    auth::Auth,
-    models::{Hash, NewHash, UniqueUser, User},
-    routes::common::*,
-    utils::mail::send_mail,
-};
+use crate::{routes::common::*, utils::mail::send_mail};
 
-use actix_web::{
-    error::{self, ErrorInternalServerError},
-    http::header::{self, Header},
-    HttpRequest,
-};
 use actix_web_httpauth::headers::authorization::{Authorization, Basic};
 
 #[get("/")]

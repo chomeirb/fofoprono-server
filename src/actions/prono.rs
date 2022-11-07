@@ -2,7 +2,7 @@ use diesel::prelude::*;
 
 use crate::{
     actions::common::*,
-    models::{Game, PredictionResult, Prono},
+    models::{Game, Prono, PronoResult},
     schema::pronos::dsl as prono,
 };
 
@@ -50,7 +50,7 @@ pub fn delete_pronos(
 pub fn get_pronos(
     conn: &mut PgConnection,
     user_id: Option<i32>,
-) -> Result<Vec<(Option<PredictionResult>, Game)>, DbError> {
+) -> Result<Vec<(Option<PronoResult>, Game)>, DbError> {
     let games: Vec<Game> = get_games(conn)?;
 
     Ok(if let Some(id) = user_id {
@@ -68,7 +68,6 @@ pub fn get_pronos(
     }
     .grouped_by(&games)
     .iter_mut()
-    // .map(Vec::pop)
     .map(|prono| prono.pop().map(Prono::into))
     .zip(games)
     .collect())
