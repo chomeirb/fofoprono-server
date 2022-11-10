@@ -9,35 +9,24 @@ async fn ranking(pool: web::Data<DbPool>, auth: Option<Auth<i32>>) -> Result<Htt
     .await?
     .map_err(ErrorInternalServerError)?;
 
-    // let id = if let Some(auth) = auth {
-    //     auth.get()
-    // } else {
-    //     1
-    // };
-
     let scores: Vec<_> = if let Some(auth) = auth {
         let id = auth.get();
         users
             .into_iter()
             .map(|user| {
                 if user.id == id {
-                    UserType::Current(UserScore::from(user))
+                    RankedUser::from((user, UserType::Current))
                 } else {
-                    UserType::Other(UserScore::from(user))
+                    RankedUser::from((user, UserType::Other))
                 }
             })
             .collect()
     } else {
         users
             .into_iter()
-            .map(|user| UserType::Other(UserScore::from(user)))
+            .map(|user| RankedUser::from((user, UserType::Other)))
             .collect()
     };
-
-    // if let Some(user) = user {
-    //     let id = &user.get();
-    //     scores.sort_by_key(|a| a.id.ne(id));
-    // }
 
     Ok(HttpResponse::Ok().json(scores))
 }

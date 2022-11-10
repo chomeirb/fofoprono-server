@@ -19,15 +19,20 @@ pub struct User {
 
 #[derive(Serialize, Deserialize)]
 pub struct UserScore {
-    pub name: String,
-
     pub score: i32,
     pub results_good: i32,
     pub results_perfect: i32,
 }
 
 #[derive(Serialize, Deserialize)]
+pub enum UserType {
+    Current,
+    Other,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct RankedUser {
+    name: String,
     user_score: UserScore,
     user_type: UserType,
 }
@@ -53,16 +58,9 @@ pub struct NewHash {
     pub user_id: i32,
 }
 
-#[derive(Serialize, Deserialize)]
-pub enum UserType {
-    Current(UserScore),
-    Other(UserScore),
-}
-
 impl From<User> for UserScore {
     fn from(
         User {
-            name,
             score,
             results_good,
             results_perfect,
@@ -70,7 +68,6 @@ impl From<User> for UserScore {
         }: User,
     ) -> Self {
         Self {
-            name,
             score,
             results_good,
             results_perfect,
@@ -78,21 +75,12 @@ impl From<User> for UserScore {
     }
 }
 
-// impl From<(User, RankedUser)> for UserScore {
-//     fn from(
-//         User {
-//             name,
-//             score,
-//             results_good,
-//             results_perfect,
-//             ..
-//         }: User,
-//     ) -> Self {
-//         Self {
-//             name,
-//             score,
-//             results_good,
-//             results_perfect,
-//         }
-//     }
-// }
+impl From<(User, UserType)> for RankedUser {
+    fn from((user, user_type): (User, UserType)) -> Self {
+        Self {
+            name: user.name.clone(),
+            user_score: UserScore::from(user),
+            user_type,
+        }
+    }
+}
