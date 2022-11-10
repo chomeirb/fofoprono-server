@@ -17,7 +17,7 @@ pub struct User {
     pub active: bool,
 }
 
-#[derive(Queryable, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UserScore {
     pub name: String,
 
@@ -26,23 +26,10 @@ pub struct UserScore {
     pub results_perfect: i32,
 }
 
-impl From<User> for UserScore {
-    fn from(
-        User {
-            name,
-            score,
-            results_good,
-            results_perfect,
-            ..
-        }: User,
-    ) -> Self {
-        Self {
-            name,
-            score,
-            results_good,
-            results_perfect,
-        }
-    }
+#[derive(Serialize, Deserialize)]
+pub struct RankedUser {
+    user_score: UserScore,
+    user_type: UserType,
 }
 
 #[derive(Insertable, Serialize, Deserialize)]
@@ -65,3 +52,47 @@ pub struct Hash {
 pub struct NewHash {
     pub user_id: i32,
 }
+
+#[derive(Serialize, Deserialize)]
+pub enum UserType {
+    Current(UserScore),
+    Other(UserScore),
+}
+
+impl From<User> for UserScore {
+    fn from(
+        User {
+            name,
+            score,
+            results_good,
+            results_perfect,
+            ..
+        }: User,
+    ) -> Self {
+        Self {
+            name,
+            score,
+            results_good,
+            results_perfect,
+        }
+    }
+}
+
+// impl From<(User, RankedUser)> for UserScore {
+//     fn from(
+//         User {
+//             name,
+//             score,
+//             results_good,
+//             results_perfect,
+//             ..
+//         }: User,
+//     ) -> Self {
+//         Self {
+//             name,
+//             score,
+//             results_good,
+//             results_perfect,
+//         }
+//     }
+// }
