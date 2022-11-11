@@ -108,7 +108,7 @@ INSERT INTO games (time, stage, team_home, team_away, odds_home, odds_away, odds
 VALUES ('2022-11-29 20:00:00', 'group', 'Pays de Galles', 'Angleterre', 5.50, 3.85, 1.54);
 
 INSERT INTO games (time, stage, team_home, team_away, odds_home, odds_away, odds_draw)
-VALUES ('2022-11-30 16:00:00', 'group', 'Australie', 'Daneemark', 6.20, 3.55, 1.55);
+VALUES ('2022-11-30 16:00:00', 'group', 'Australie', 'Danemark', 6.20, 3.55, 1.55);
 
 INSERT INTO games (time, stage, team_home, team_away, odds_home, odds_away, odds_draw)
 VALUES ('2022-11-30 16:00:00', 'group', 'Tunisie', 'France', 12.50, 5.20, 1.23);
