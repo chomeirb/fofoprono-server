@@ -79,6 +79,7 @@ BEGIN
   UPDATE pronos SET result = (
     SELECT
       CASE
+      -- TODO: Check elseif
         WHEN games.score_home IS NULL OR games.score_away IS NULL then NULL
         WHEN pronos.prediction_home = games.score_home AND pronos.prediction_away = games.score_away THEN 'exact'::RESULT
         WHEN pronos.prediction_home > pronos.prediction_away AND games.score_home > games.score_away THEN 'correct'::RESULT
