@@ -67,14 +67,14 @@ async fn signup_user(
 #[delete("/user")]
 async fn del_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpResponse, Error> {
     let id = user.get();
-    let user = web::block(move || {
+    let _user = web::block(move || {
         let conn = &mut pool.get()?;
         actions::delete_user(conn, id)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Ok().json(user))
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[post("/login")]

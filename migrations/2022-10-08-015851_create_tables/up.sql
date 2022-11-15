@@ -17,6 +17,28 @@ CREATE TABLE users (
 
 CREATE TYPE STAGE AS ENUM ('group', 'sixteen', 'quarter', 'semi', 'final');
 
+CREATE FUNCTION multiplier_stage(stage STAGE) RETURNS INTEGER IMMUTABLE AS $$
+BEGIN
+  RETURN CASE stage
+    WHEN 'group' THEN 8
+    WHEN 'sixteen' then 12
+    WHEN 'quarter' THEN 16
+    WHEN 'semi' THEN 20
+    WHEN 'final' THEN 30
+  END;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION multiplier_odds(score_home INTEGER, score_away INTEGER, odds_home FLOAT, odds_away FLOAT, odds_draw FLOAT) RETURNS FLOAT IMMUTABLE AS $$
+BEGIN
+  RETURN CASE
+    WHEN score_home > score_away THEN odds_home
+    WHEN score_home < score_away THEN odds_away
+    WHEN score_home = score_away THEN odds_draw
+  END;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TABLE games (
   id SERIAL PRIMARY KEY,
   time TIMESTAMP NOT NULL,
@@ -81,11 +103,11 @@ BEGIN
   score = (
     SELECT COALESCE(SUM(
       CASE
-        WHEN pronos.result = 'exact' THEN 3
-        WHEN pronos.result = 'correct' THEN 1
+        WHEN pronos.result = 'exact' THEN multiplier_odds(games.score_home, games.score_away, games.odds_home, games.odds_away, games.odds_draw) * multiplier_stage(games.stage) * 2
+        WHEN pronos.result = 'correct' THEN multiplier_odds(games.score_home, games.score_away, games.odds_home, games.odds_away, games.odds_draw) * multiplier_stage(games.stage)
         ELSE 0
       END
-    ), 0) FROM pronos WHERE pronos.user_id = users.id
+    ), 0) FROM pronos, games WHERE pronos.user_id = users.id AND pronos.game_id = games.id
   ),
   results_perfect = (
     SELECT COALESCE(SUM(

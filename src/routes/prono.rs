@@ -30,13 +30,13 @@ async fn delete_pronos(
 ) -> Result<HttpResponse, Error> {
     let (user_id, predictions) = (user.get(), req.into_inner());
 
-    let pronos = predictions
+    let predictions = predictions
         .into_iter()
         .map(move |prediction| Prono::from((user_id, prediction)));
 
     let pronos = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::delete_pronos(conn, pronos)
+        actions::delete_pronos(conn, predictions)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
