@@ -21,7 +21,7 @@ async fn get_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpRespon
     .await?
     .map_err(ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Ok().json(user))
+    Ok(HttpResponse::Ok().json(user.name))
 }
 
 #[post("/signup")]
