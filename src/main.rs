@@ -30,6 +30,11 @@ async fn main() -> std::io::Result<()> {
 
     let path = env::var("FRONTEND").expect("FRONTEND must be set");
     let static_files = String::from(path.strip_suffix('/').unwrap_or(&path));
+    let accepted_origins = env::var("ACCEPTED_ORIGINS").expect("ACCEPTED_ORIGINS must be set");
+    let port = env::var("PORT")
+        .expect("PORT must be set")
+        .parse::<u16>()
+        .expect("PORT must be a number");
 
     HttpServer::new(move || {
         let session_mw =
@@ -68,7 +73,7 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind((accepted_origins, port))?
     .run()
     .await
 }

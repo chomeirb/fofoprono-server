@@ -3,7 +3,7 @@ services:
     container_name: postgresql-fofoprono
     image: postgres:14-alpine
     environment:
-      POSTGRES_PASSWORD: fboitel
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - ./db-data:/var/lib/postgresql/data
     ports:
