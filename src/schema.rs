@@ -53,7 +53,7 @@ diesel::table! {
         id -> Int4,
         name -> Varchar,
         mail -> Varchar,
-        password -> Varchar,
+        password -> Text,
         score -> Int4,
         results_good -> Int4,
         results_perfect -> Int4,
@@ -65,9 +65,4 @@ diesel::joinable!(hashes -> users (user_id));
 diesel::joinable!(pronos -> games (game_id));
 diesel::joinable!(pronos -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    games,
-    hashes,
-    pronos,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(games, hashes, pronos, users,);

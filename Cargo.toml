@@ -20,3 +20,4 @@ lettre = { version = "0.10", features = [] }
 rand = "0"
 nanoid = "0"
 time = "0"
+argon2 = "0.4.1"

@@ -25,10 +25,7 @@ pub fn send_mail(to: &str, hash: String) -> Result<Response, DbError> {
         )
         .unwrap();
 
-    let creds = Credentials::new(
-        mail_username.to_string(),
-        mail_password.to_string(),
-    );
+    let creds = Credentials::new(mail_username, mail_password);
 
     let mailer = SmtpTransport::relay("smtp.zoho.eu")
         .unwrap()
