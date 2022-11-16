@@ -10,7 +10,7 @@ pub fn send_mail(to: &str, hash: String) -> Result<Response, DbError> {
     let mail_username = std::env::var("MAIL_USERNAME").expect("MAIL_USERNAME must be set");
     let mail_password = std::env::var("MAIL_PASSWORD").expect("MAIL_PASSWORD must be set");
     let email = Message::builder()
-        .from("fofoporno <fofoprono@zohomail.eu>".parse().unwrap())
+        .from("fofoprono <fofoprono@zohomail.eu>".parse().unwrap())
         .reply_to("Yuin <fofoprono@zohomail.eu>".parse().unwrap())
         .to(["Hei <", to, ">"].join("").parse().unwrap())
         .subject("Welcome to Fofoprono!")
