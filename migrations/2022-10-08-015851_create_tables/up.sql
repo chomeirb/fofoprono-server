@@ -4,7 +4,7 @@ CREATE TABLE users (
 
   name VARCHAR(20) NOT NULL,
   mail VARCHAR(100) NOT NULL,
-  password TEXT NOT NULL,
+  password VARCHAR(96) NOT NULL,
 
   score INT NOT NULL DEFAULT 0,
   results_good INT NOT NULL DEFAULT 0,
