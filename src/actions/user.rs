@@ -67,8 +67,8 @@ pub fn delete_user(conn: &mut PgConnection, user_id: i32) -> Result<User, DbErro
     remove_row(conn, user::users, user_id)
 }
 
-pub fn get_and_remove_hash(conn: &mut PgConnection, uuid: String) -> Result<Hash, DbError> {
-    remove_row(conn, hash::hashes, uuid)
+pub fn get_and_remove_hash(conn: &mut PgConnection, hash: String) -> Result<Hash, DbError> {
+    remove_row(conn, hash::hashes, hash)
 }
 
 pub fn add_hash(conn: &mut PgConnection, hash: NewHash) -> Result<Hash, DbError> {
