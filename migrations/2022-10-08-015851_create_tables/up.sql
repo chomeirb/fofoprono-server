@@ -4,7 +4,7 @@ CREATE TABLE users (
 
   name VARCHAR(20) NOT NULL,
   mail VARCHAR(100) NOT NULL,
-  password VARCHAR(20) NOT NULL,
+  password VARCHAR(96) NOT NULL,
 
   score INT NOT NULL DEFAULT 0,
   results_good INT NOT NULL DEFAULT 0,
@@ -12,7 +12,8 @@ CREATE TABLE users (
 
   active BOOLEAN NOT NULL DEFAULT false,
 
-  CONSTRAINT user_mail UNIQUE (mail)
+  CONSTRAINT unique_name UNIQUE (name),
+  CONSTRAINT unique_mail UNIQUE (mail)
 );
 
 CREATE TYPE STAGE AS ENUM ('group', 'sixteen', 'quarter', 'semi', 'final');
