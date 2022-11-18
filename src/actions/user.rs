@@ -1,3 +1,7 @@
+use argon2::{
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
+};
 use diesel::prelude::*;
 
 use crate::{
@@ -20,19 +24,31 @@ pub fn credentials_get_user(
     name: String,
     password: String,
 ) -> Result<User, DbError> {
-    Ok(user::users
-        .filter(
-            user::active.eq(true).and(
-                user::name
-                    .eq(name)
-                    // .or(user::mail.eq(user.mail))
-                    .and(user::password.eq(password)),
-            ),
-        )
-        .get_result(conn)?)
+    let user: User = user::users
+        .filter(user::active.eq(true).and(user::name.eq(name)))
+        .get_result(conn)?;
+
+    let parsed_hash =
+        PasswordHash::new(&user.password).map_err(|err| DbError::from(err.to_string()))?;
+
+    if Argon2::default()
+        .verify_password(password.as_bytes(), &parsed_hash)
+        .is_ok()
+    {
+        Ok(user)
+    } else {
+        Err(DbError::from("Record not found"))
+    }
 }
 
-pub fn add_user(conn: &mut PgConnection, user: UniqueUser) -> Result<User, DbError> {
+pub fn add_user(conn: &mut PgConnection, mut user: UniqueUser) -> Result<User, DbError> {
+    let salt = SaltString::generate(&mut OsRng);
+    let argon2 = Argon2::default();
+    user.password = argon2
+        .hash_password(user.password.as_bytes(), &salt)
+        .map_err(|err| DbError::from(err.to_string()))?
+        .to_string();
+
     add_row(conn, user::users, user)
 }
 
