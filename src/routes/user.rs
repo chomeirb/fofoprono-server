@@ -1,7 +1,5 @@
 use crate::{routes::common::*, utils::mail::send_mail};
 
-use actix_web_httpauth::headers::authorization::{Authorization, Basic};
-
 #[get("/")]
 async fn index(user: Option<Auth<i32>>) -> HttpResponse {
     if let Some(user) = user {
@@ -31,9 +29,9 @@ async fn signup_process(
 ) -> Result<HttpResponse, Error> {
     web::block(move || {
         let conn = &mut pool.get()?;
-        let User { id, mail, .. } = actions::add_user(conn, user.0)?;
+        let User { id, name, mail, .. } = actions::add_user(conn, user.0)?;
         let Hash { id, .. } = actions::add_hash(conn, NewHash { user_id: id })?;
-        send_mail(&mail, id)
+        send_mail(name, mail, id)
     })
     .await?
     .map_err(ErrorInternalServerError)?;
@@ -78,20 +76,14 @@ async fn del_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpRespon
 }
 
 #[post("/login")]
-async fn login(pool: web::Data<DbPool>, req: HttpRequest) -> Result<HttpResponse, Error> {
-    let auth = Authorization::<Basic>::parse(&req)?;
-    let basic = auth.as_ref();
-    let (name, password) = (
-        basic.user_id().to_owned(),
-        basic
-            .password()
-            .ok_or_else(|| error::ErrorUnauthorized(""))?
-            .to_owned(),
-    );
-
+async fn login(
+    pool: web::Data<DbPool>,
+    user: web::Json<UniqueUser>,
+    req: HttpRequest,
+) -> Result<HttpResponse, Error> {
     let User { id, .. } = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::credentials_get_user(conn, name, password)
+        actions::credentials_get_user(conn, user.0)
     })
     .await?
     .map_err(ErrorInternalServerError)?;

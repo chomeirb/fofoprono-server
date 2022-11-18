@@ -65,9 +65,4 @@ diesel::joinable!(hashes -> users (user_id));
 diesel::joinable!(pronos -> games (game_id));
 diesel::joinable!(pronos -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    games,
-    hashes,
-    pronos,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(games, hashes, pronos, users,);

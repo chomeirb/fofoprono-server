@@ -50,7 +50,7 @@ async fn get_games(
     pool: web::Data<DbPool>,
     user: Option<Auth<i32>>,
 ) -> Result<HttpResponse, Error> {
-    let id = user.map(|user| user.get());
+    let id = user.get();
 
     let games = web::block(move || {
         let conn = &mut pool.get()?;

@@ -26,11 +26,14 @@ async fn main() -> std::io::Result<()> {
         .build(manager)
         .expect("Failed to create pool.");
 
-    let secret_key = Key::generate();
+    let domain = env::var("DOMAIN").expect("DOMAIN must be set");
+
+    let key = env::var("COOKEY").expect("COOKEY must be set");
+    let secret_key = Key::from(key.as_bytes());
 
     let path = env::var("FRONTEND").expect("FRONTEND must be set");
     let static_files = String::from(path.strip_suffix('/').unwrap_or(&path));
-    let accepted_origins = env::var("ACCEPTED_ORIGINS").expect("ACCEPTED_ORIGINS must be set");
+
     let port = env::var("PORT")
         .expect("PORT must be set")
         .parse::<u16>()
@@ -39,14 +42,13 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         let session_mw =
             SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
-                // disable secure cookie for local testing
                 .cookie_http_only(true)
-                .cookie_secure(false)
+                .cookie_secure(true)
                 .build();
 
         App::new()
+            .wrap(Cors::default().allowed_origin(&domain))
             .app_data(web::Data::new(pool.clone()))
-            .wrap(Cors::permissive())
             .wrap(session_mw)
             .service(
                 actix_web::Scope::new("/api")
@@ -73,7 +75,7 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
     })
-    .bind((accepted_origins, port))?
+    .bind(("0.0.0.0", port))?
     .run()
     .await
 }
