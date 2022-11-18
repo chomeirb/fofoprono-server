@@ -34,6 +34,8 @@ async fn main() -> std::io::Result<()> {
     let path = env::var("FRONTEND").expect("FRONTEND must be set");
     let static_files = String::from(path.strip_suffix('/').unwrap_or(&path));
 
+    let allowed_origins = env::var("ALLOWED_ORIGINS").expect("ALLOWED_ORIGINS must be set");
+
     let port = env::var("PORT")
         .expect("PORT must be set")
         .parse::<u16>()
@@ -75,7 +77,7 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
     })
-    .bind(("0.0.0.0", port))?
+    .bind((allowed_origins, port))?
     .run()
     .await
 }
