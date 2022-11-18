@@ -61,6 +61,16 @@ where
     }
 }
 
+pub trait OptionalAuth<T> {
+    fn get(self) -> Option<T>;
+}
+
+impl<T: Serialize + DeserializeOwned> OptionalAuth<T> for Option<Auth<T>> {
+    fn get(self) -> Option<T> {
+        self.map(|auth| auth.0.data)
+    }
+}
+
 trait AuthKey<T> {
     fn data_key() -> String;
     fn logged_in_key() -> String;

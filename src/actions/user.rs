@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub fn get_users(conn: &mut PgConnection) -> Result<Vec<User>, DbError> {
-    get_rows(conn, user::users)
+    Ok(user::users.filter(user::active.eq(true)).load(conn)?)
 }
 
 pub fn get_user(conn: &mut PgConnection, user_id: i32) -> Result<User, DbError> {
@@ -21,18 +21,23 @@ pub fn get_user(conn: &mut PgConnection, user_id: i32) -> Result<User, DbError> 
 
 pub fn credentials_get_user(
     conn: &mut PgConnection,
-    name: String,
-    password: String,
+    credentials: UniqueUser,
 ) -> Result<User, DbError> {
     let user: User = user::users
-        .filter(user::active.eq(true).and(user::name.eq(name)))
+        .filter(
+            user::active.eq(true).and(
+                user::name
+                    .eq(credentials.name)
+                    .or(user::mail.eq(credentials.mail)),
+            ),
+        )
         .get_result(conn)?;
 
     let parsed_hash =
         PasswordHash::new(&user.password).map_err(|err| DbError::from(err.to_string()))?;
 
     if Argon2::default()
-        .verify_password(password.as_bytes(), &parsed_hash)
+        .verify_password(credentials.password.as_bytes(), &parsed_hash)
         .is_ok()
     {
         Ok(user)
@@ -62,8 +67,8 @@ pub fn delete_user(conn: &mut PgConnection, user_id: i32) -> Result<User, DbErro
     remove_row(conn, user::users, user_id)
 }
 
-pub fn get_and_remove_hash(conn: &mut PgConnection, uuid: String) -> Result<Hash, DbError> {
-    remove_row(conn, hash::hashes, uuid)
+pub fn get_and_remove_hash(conn: &mut PgConnection, hash: String) -> Result<Hash, DbError> {
+    remove_row(conn, hash::hashes, hash)
 }
 
 pub fn add_hash(conn: &mut PgConnection, hash: NewHash) -> Result<Hash, DbError> {
