@@ -1,3 +1,5 @@
+use actix_web::routes;
+
 use crate::routes::common::*;
 
 #[post("/prono")]
@@ -17,7 +19,7 @@ async fn add_pronos(
         actions::process_pronos(conn, predictions)
     })
     .await?
-    .map_err(ErrorInternalServerError)?;
+    .map_err(error::ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().json(pronos))
 }
@@ -39,25 +41,31 @@ async fn delete_pronos(
         actions::delete_pronos(conn, predictions)
     })
     .await?
-    .map_err(ErrorInternalServerError)?;
+    .map_err(error::ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().json(pronos))
 }
 
-/// Fetches games AND user pronos if authentified (otherwise pronos are null) in a tuple.
-#[get("/games")]
+/// Fetches games AND user pronos if authentified (otherwise pronos are null) in a tuple. Can also get any user's pronos with path
+#[routes]
+#[get("/prono")]
+#[get("/prono/{user}")]
 async fn get_games(
     pool: web::Data<DbPool>,
     user: Option<Auth<i32>>,
+    path: Option<web::Path<String>>,
 ) -> Result<HttpResponse, Error> {
-    let id = user.get();
+    let mut id = user.get();
 
     let games = web::block(move || {
         let conn = &mut pool.get()?;
+        if let Some(name) = path.map(|path| path.into_inner()) {
+            id = Some(actions::name_get_user(conn, name)?.id)
+        }
         actions::get_pronos(conn, id)
     })
     .await?
-    .map_err(ErrorInternalServerError)?;
+    .map_err(error::ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().json(games))
 }
