@@ -9,7 +9,7 @@ use std::env;
 
 use actix_cors::Cors;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_web::{cookie::Key, web, App, HttpServer};
+use actix_web::{cookie::Key, web, App, HttpServer, http::header};
 use diesel::{
     r2d2::{self, ConnectionManager},
     PgConnection,
@@ -47,6 +47,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(
                 Cors::default()
                     .allowed_origin(&domain)
+                    .allowed_headers([header::CONTENT_TYPE])
                     .allowed_methods(["GET", "POST", "DELETE"])
                     .supports_credentials(),
             )
