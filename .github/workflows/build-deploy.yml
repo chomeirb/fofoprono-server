@@ -44,12 +44,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
     - name: Copy docker-compose.yml to server
       uses: appleboy/scp-action@master
       with:
@@ -58,6 +52,12 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         source: ./docker-compose.yml
         target: /srv/fofoprono/server
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
     - name: Pull image and deploy to server
       uses: appleboy/ssh-action@master
