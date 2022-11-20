@@ -66,15 +66,15 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          export IMAGE=${{ steps.meta.outputs.tags }}
-          export DATABASE_URL=${{ secrets.DATABASE_URL }}
-          export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          export API_URL=${{ secrets.API_URL }}
-          export API_PORT=${{ secrets.API_PORT }}
-          export DOMAIN=${{ secrets.DOMAIN }}
-          export MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
-          export MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-          export COOKEY=${{ secrets.COOKEY }}
+          export IMAGE="${{ steps.meta.outputs.tags }}"
+          export DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+          export API_URL="${{ secrets.API_URL }}"
+          export API_PORT="${{ secrets.API_PORT }}"
+          export DOMAIN="${{ secrets.DOMAIN }}"
+          export MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
+          export MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
+          export COOKEY="${{ secrets.COOKEY }}"
           printenv
           echo $IMAGE
           cd /srv/fofoprono/server
