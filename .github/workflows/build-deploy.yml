@@ -62,12 +62,12 @@ jobs:
     - name: Pull image and deploy to server
       uses: appleboy/ssh-action@master
       env:
-        PORT: ${{ secrets.PORT }}
         IMAGE: ${{ steps.meta.outputs.tags }}
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        DOMAIN: ${{ secrets.DOMAIN }}
         API_URL: ${{ secrets.API_URL }}
+        API_PORT: ${{ secrets.API_PORT }}
+        DOMAIN: ${{ secrets.DOMAIN }}
         MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
         MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         COOKEY: ${{ secrets.COOKEY }}
@@ -75,7 +75,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        envs: IMAGE,DATABASE_URL,POSTGRES_PASSWORD,DOMAIN,API_URL,API_PORT,MAIL_USERNAME,MAIL_PASSWORD,COOKEY
+        envs: IMAGE,DATABASE_URL,POSTGRES_PASSWORD,API_URL,API_PORT,DOMAIN,MAIL_USERNAME,MAIL_PASSWORD,COOKEY
         script: |
           cd /srv/fofoprono/server
           echo "Pulling image $IMAGE"
