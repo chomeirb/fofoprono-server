@@ -1,9 +1,26 @@
 services:
-  dashboard-db:
+  api:
+    container_name: rust-fofoprono
+    image: ghcr.io/fboitel/fofoprono:latest
+    ports:
+      - ${PORT}:8080
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL
+      - POSTGRES_PASSWORD
+      - PORT
+      - DOMAIN
+      - API_URL
+      - MAIL_USERNAME
+      - MAIL_PASSWORD
+      - COOKEY
+
+  db:
     container_name: postgresql-fofoprono
     image: postgres:14-alpine
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD
     volumes:
       - ./db-data:/var/lib/postgresql/data
     ports:
