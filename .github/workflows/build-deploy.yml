@@ -85,6 +85,8 @@ jobs:
           export MAIL_USERNAME=$MAIL_USERNAME
           export MAIL_PASSWORD=$MAIL_PASSWORD
           export COOKEY=$COOKEY
+          printenv
+          echo $IMAGE
           cd /srv/fofoprono/server
           docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
           docker-compose pull
