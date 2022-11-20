@@ -63,6 +63,7 @@ jobs:
       uses: appleboy/ssh-action@master
       env:
         IMAGE: ${{ steps.meta.outputs.tags }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
