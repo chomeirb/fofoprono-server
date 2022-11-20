@@ -75,12 +75,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        envs: IMAGE,DATABASE_URL,POSTGRES_PASSWORD,API_URL,API_PORT,DOMAIN,MAIL_USERNAME,MAIL_PASSWORD,COOKEY
+        all_envs: true
+        envs: IMAGE,DATABASE_URL,POSTGRES_PASSWORD,API_URL,API_PORT,DOMAIN,MAIL_USERNAME,MAIL_PASSWORD,COOKEY,REGISTRY
         script: |
-          cd /srv/fofoprono/server
-          echo "Pulling image $IMAGE"
-          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-          env
-          docker-compose pull
-          echo "Deploying image $IMAGE"
-          docker-compose up -d
+          printenv
