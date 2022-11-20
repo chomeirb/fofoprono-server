@@ -6,7 +6,7 @@ use crate::actions::DbError;
 
 pub fn send_mail(username: String, to: String, hash: String) -> Result<Response, DbError> {
     // Parse url from env file
-    let domain = std::env::var("DOMAIN").expect("DOMAIN must be set");
+    let api_url = std::env::var("API_URL").expect("API_URL must be set");
     let mail_username = std::env::var("MAIL_USERNAME").expect("MAIL_USERNAME must be set");
     let mail_password = std::env::var("MAIL_PASSWORD").expect("MAIL_PASSWORD must be set");
 
@@ -22,8 +22,8 @@ pub fn send_mail(username: String, to: String, hash: String) -> Result<Response,
         .body(
             [
                 "Click this link to verify your account: ",
-                &domain,
-                "/api/signup/",
+                &api_url,
+                "/signup/",
                 &hash,
             ]
             .join(""),

@@ -48,7 +48,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(pool.clone()))
             .wrap(session_mw)
             .service(
-                actix_web::Scope::new("/api")
+                actix_web::Scope::new("")
                     .service(index)
                     .service(signup_process)
                     .service(signup_user)
