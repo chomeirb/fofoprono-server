@@ -1,7 +1,7 @@
 services:
   api:
-    container_name: rust-fofoprono
-    image: ghcr.io/fboitel/fofoprono:latest
+    container_name: fofoprono-api
+    image: ${REGISTRY}/${IMAGE_NAME}
     ports:
       - ${PORT}:8080
     depends_on:
@@ -17,7 +17,7 @@ services:
       - COOKEY
 
   db:
-    container_name: postgresql-fofoprono
+    container_name: fofoprono-postgresql
     image: postgres:14-alpine
     environment:
       - POSTGRES_PASSWORD
