@@ -1,4 +1,4 @@
-name: Push the image and deploy to server
+name: Build the image and deploy to server
 
 on:
   push:
@@ -43,6 +43,8 @@ jobs:
     - name: Pull image and deploy
       uses: appleboy/ssh-action@master
       env:
+        REGISTRY: ${{ env.REGISTRY }}
+        IMAGE_NAME: ${{ env.IMAGE_NAME }}
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         PORT: ${{ secrets.PORT }}
@@ -58,6 +60,6 @@ jobs:
         envs: DATABASE_URL,POSTGRES_PASSWORD,PORT,DOMAIN,API_URL,MAIL_USERNAME,MAIL_PASSWORD,COOKEY
         script: |
           cd /srv/fofoprono
-          docker login ghcr.io -u ${{ github.repository_owner }} -p ${{ secrets.GITHUB_TOKEN }}
-          docker compose pull ${{ steps.meta.outputs.tags }}
-          docker compose up -d
+          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+          docker-compose pull ${{ steps.meta.outputs.tags }}
+          docker-compose up -d
