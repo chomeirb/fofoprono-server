@@ -75,9 +75,9 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        envs: DATABASE_URL,POSTGRES_PASSWORD,PORT,DOMAIN,API_URL,MAIL_USERNAME,MAIL_PASSWORD,COOKEY
+        envs: IMAGE,DATABASE_URL,POSTGRES_PASSWORD,PORT,DOMAIN,API_URL,MAIL_USERNAME,MAIL_PASSWORD,COOKEY
         script: |
           cd /srv/fofoprono/server
           docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-          docker-compose pull ${{ steps.meta.outputs.tags }}
+          docker-compose pull
           docker-compose up -d
