@@ -31,9 +31,6 @@ async fn main() -> std::io::Result<()> {
     let key = env::var("COOKEY").expect("COOKEY must be set");
     let secret_key = Key::from(key.as_bytes());
 
-    let path = env::var("FRONTEND").expect("FRONTEND must be set");
-    let static_files = String::from(path.strip_suffix('/').unwrap_or(&path));
-
     let port = env::var("PORT")
         .expect("PORT must be set")
         .parse::<u16>()
@@ -63,16 +60,6 @@ async fn main() -> std::io::Result<()> {
                     .service(delete_pronos)
                     .service(get_games)
                     .service(ranking),
-            )
-            .service(
-                actix_files::Files::new("/", static_files.clone())
-                    .index_file("index.html")
-                    .default_handler(
-                        actix_files::NamedFile::open(
-                            vec![static_files.clone(), "index.html".to_owned()].join("/"),
-                        )
-                        .expect("index file should exist"),
-                    ),
             )
     })
     .bind(("0.0.0.0", port))?
