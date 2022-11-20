@@ -61,30 +61,21 @@ jobs:
 
     - name: Pull image and deploy to server
       uses: appleboy/ssh-action@master
-      env:
-        IMAGE: ${{ steps.meta.outputs.tags }}
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        API_URL: ${{ secrets.API_URL }}
-        API_PORT: ${{ secrets.API_PORT }}
-        DOMAIN: ${{ secrets.DOMAIN }}
-        MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-        MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         COOKEY: ${{ secrets.COOKEY }}
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          export IMAGE=$IMAGE
-          export DATABASE_URL=$DATABASE_URL
-          export POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-          export API_URL=$API_URL
-          export API_PORT=$API_PORT
-          export DOMAIN=$DOMAIN
-          export MAIL_USERNAME=$MAIL_USERNAME
-          export MAIL_PASSWORD=$MAIL_PASSWORD
-          export COOKEY=$COOKEY
+          export IMAGE=${{ steps.meta.outputs.tags }}
+          export DATABASE_URL=${{ secrets.DATABASE_URL }}
+          export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          export API_URL=${{ secrets.API_URL }}
+          export API_PORT=${{ secrets.API_PORT }}
+          export DOMAIN=${{ secrets.DOMAIN }}
+          export MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+          export MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          export COOKEY=${{ secrets.COOKEY }}
           printenv
           echo $IMAGE
           cd /srv/fofoprono/server
