@@ -53,11 +53,16 @@ jobs:
         source: ./docker-compose.yml
         target: /srv/fofoprono/server
 
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
     - name: Pull image and deploy to server
       uses: appleboy/ssh-action@master
       env:
-        REGISTRY: ${{ env.REGISTRY }}
-        IMAGE_NAME: ${{ env.IMAGE_NAME }}
+        IMAGE: ${{ steps.meta.outputs.tags }}
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         PORT: ${{ secrets.PORT }}

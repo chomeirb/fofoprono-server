@@ -1,7 +1,7 @@
 services:
   api:
     container_name: fofoprono-api
-    image: ${REGISTRY}/${IMAGE_NAME}
+    image: ${IMAGE}
     ports:
       - ${PORT}:8080
     depends_on:
