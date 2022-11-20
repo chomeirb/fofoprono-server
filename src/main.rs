@@ -44,7 +44,12 @@ async fn main() -> std::io::Result<()> {
                 .build();
 
         App::new()
-            .wrap(Cors::default().allowed_origin(&domain))
+            .wrap(
+                Cors::default()
+                    .allowed_origin(&domain)
+                    .allowed_methods(["GET", "POST", "DELETE"])
+                    .supports_credentials(),
+            )
             .app_data(web::Data::new(pool.clone()))
             .wrap(session_mw)
             .service(
