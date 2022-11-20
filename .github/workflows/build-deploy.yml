@@ -61,7 +61,6 @@ jobs:
 
     - name: Pull image and deploy to server
       uses: appleboy/ssh-action@master
-        COOKEY: ${{ secrets.COOKEY }}
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
