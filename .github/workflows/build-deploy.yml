@@ -78,10 +78,5 @@ jobs:
         envs: IMAGE,DATABASE_URL,POSTGRES_PASSWORD,PORT,DOMAIN,API_URL,MAIL_USERNAME,MAIL_PASSWORD,COOKEY
         script: |
           cd /srv/fofoprono/server
-          echo ${{ secrets.GITHUB_TOKEN }}
-          echo ${{ secrets.DOCKER_TOKEN }}
-          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> env
-          echo "Hello World" >> env
-          echo "Hello world"
-          docker login ${{ env.REGISTRY }} -u ${{ github.actor }} -p ${{ secrets.DOCKER_TOKEN }}
-          echo "finish"
+          pwd
+          touch hello.txt
