@@ -61,22 +61,9 @@ jobs:
 
     - name: Pull image and deploy to server
       uses: appleboy/ssh-action@master
-      env:
-        IMAGE: ${{ steps.meta.outputs.tags }}
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        PORT: ${{ secrets.PORT }}
-        DOMAIN: ${{ secrets.DOMAIN }}
-        API_URL: ${{ secrets.API_URL }}
-        MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-        MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-        COOKEY: ${{ secrets.COOKEY }}
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        envs: IMAGE,DATABASE_URL,POSTGRES_PASSWORD,PORT,DOMAIN,API_URL,MAIL_USERNAME,MAIL_PASSWORD,COOKEY
         script: |
-          cd /srv/fofoprono/server
           pwd
-          touch hello.txt
