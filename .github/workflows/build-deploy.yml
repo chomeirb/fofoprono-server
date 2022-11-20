@@ -66,4 +66,8 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
+          whoami
           pwd
+          ls -R /srv
+          cd /srv/fofoprono/server
+          ls -la
