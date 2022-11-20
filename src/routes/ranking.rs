@@ -7,7 +7,7 @@ async fn ranking(pool: web::Data<DbPool>, auth: Option<Auth<i32>>) -> Result<Htt
         actions::get_users(conn)
     })
     .await?
-    .map_err(ErrorInternalServerError)?;
+    .map_err(error::ErrorInternalServerError)?;
 
     let id = auth.get();
 

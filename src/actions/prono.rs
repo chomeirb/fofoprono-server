@@ -10,7 +10,7 @@ fn is_incoming(conn: &mut PgConnection, game_id: i32) -> Result<(), DbError> {
     if game::get_game(conn, game_id)?.time.elapsed().is_err() {
         Ok(())
     } else {
-        Err(DbError::from("Cannot modify prono from past game"))
+        Err(DbError::from("Cannot modify pronos for past games"))
     }
 }
 

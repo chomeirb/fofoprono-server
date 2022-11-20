@@ -1,9 +1,7 @@
 mod common {
     pub(crate) use crate::{actions, auth::*, models::*};
     pub use actix_web::{
-        delete,
-        error::{self, ErrorInternalServerError},
-        get,
+        delete, error, get,
         http::header::{self, Header},
         post, web, Error, HttpRequest, HttpResponse,
     };

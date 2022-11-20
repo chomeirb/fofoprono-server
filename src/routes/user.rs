@@ -19,7 +19,7 @@ async fn get_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpRespon
         actions::get_user(conn, id)
     })
     .await?
-    .map_err(ErrorInternalServerError)?;
+    .map_err(error::ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().json(user.name))
 }
@@ -36,7 +36,7 @@ async fn signup_process(
         send_mail(name, mail, id)
     })
     .await?
-    .map_err(ErrorInternalServerError)?;
+    .map_err(error::ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().finish())
 }
@@ -55,7 +55,7 @@ async fn signup_user(
         actions::verify_user(conn, user_id)
     })
     .await?
-    .map_err(ErrorInternalServerError)?;
+    .map_err(error::ErrorInternalServerError)?;
 
     Auth::authenticate(&req, id)?;
 
@@ -74,7 +74,7 @@ async fn del_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpRespon
         actions::delete_user(conn, id)
     })
     .await?
-    .map_err(ErrorInternalServerError)?;
+    .map_err(error::ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().finish())
 }
@@ -90,7 +90,7 @@ async fn login(
         actions::credentials_get_user(conn, user.0)
     })
     .await?
-    .map_err(ErrorInternalServerError)?;
+    .map_err(error::ErrorInternalServerError)?;
 
     Auth::authenticate(&req, id)?;
 
