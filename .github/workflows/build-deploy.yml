@@ -41,7 +41,19 @@ jobs:
     needs: build-and-push
     environment: production
     steps:
-    - name: Pull image and deploy
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Copy docker-compose.yml to server
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: ./docker-compose.yml
+        target: /srv/fofoprono/server
+
+    - name: Pull image and deploy to server
       uses: appleboy/ssh-action@master
       env:
         REGISTRY: ${{ env.REGISTRY }}
@@ -60,7 +72,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         envs: DATABASE_URL,POSTGRES_PASSWORD,PORT,DOMAIN,API_URL,MAIL_USERNAME,MAIL_PASSWORD,COOKEY
         script: |
-          cd /srv/fofoprono
+          cd /srv/fofoprono/server
           docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
           docker-compose pull ${{ steps.meta.outputs.tags }}
           docker-compose up -d
