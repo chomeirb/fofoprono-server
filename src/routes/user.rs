@@ -1,5 +1,7 @@
 use crate::{routes::common::*, utils::mail::send_mail};
 
+use std::env;
+
 #[get("/")]
 async fn index(user: Option<Auth<i32>>) -> HttpResponse {
     if let Some(user) = user {
@@ -57,8 +59,10 @@ async fn signup_user(
 
     Auth::authenticate(&req, id)?;
 
+    let domain = env::var("DOMAIN").expect("DOMAIN must be set");
+
     Ok(HttpResponse::SeeOther()
-        .append_header((header::LOCATION, "/prono"))
+        .append_header((header::LOCATION, format!("{}/prono", domain)))
         .finish())
 }
 

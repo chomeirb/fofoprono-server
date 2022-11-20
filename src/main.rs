@@ -9,7 +9,7 @@ use std::env;
 
 use actix_cors::Cors;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_web::{cookie::Key, web, App, HttpServer};
+use actix_web::{cookie::Key, web, App, HttpServer, http::header};
 use diesel::{
     r2d2::{self, ConnectionManager},
     PgConnection,
@@ -31,9 +31,6 @@ async fn main() -> std::io::Result<()> {
     let key = env::var("COOKEY").expect("COOKEY must be set");
     let secret_key = Key::from(key.as_bytes());
 
-    let path = env::var("FRONTEND").expect("FRONTEND must be set");
-    let static_files = String::from(path.strip_suffix('/').unwrap_or(&path));
-
     let port = env::var("PORT")
         .expect("PORT must be set")
         .parse::<u16>()
@@ -47,11 +44,17 @@ async fn main() -> std::io::Result<()> {
                 .build();
 
         App::new()
-            .wrap(Cors::default().allowed_origin(&domain))
+            .wrap(
+                Cors::default()
+                    .allowed_origin(&domain)
+                    .allowed_headers([header::CONTENT_TYPE])
+                    .allowed_methods(["GET", "POST", "DELETE"])
+                    .supports_credentials(),
+            )
             .app_data(web::Data::new(pool.clone()))
             .wrap(session_mw)
             .service(
-                actix_web::Scope::new("/api")
+                actix_web::Scope::new("")
                     .service(index)
                     .service(signup_process)
                     .service(signup_user)
@@ -63,16 +66,6 @@ async fn main() -> std::io::Result<()> {
                     .service(delete_pronos)
                     .service(get_games)
                     .service(ranking),
-            )
-            .service(
-                actix_files::Files::new("/", static_files.clone())
-                    .index_file("index.html")
-                    .default_handler(
-                        actix_files::NamedFile::open(
-                            vec![static_files.clone(), "index.html".to_owned()].join("/"),
-                        )
-                        .expect("index file should exist"),
-                    ),
             )
     })
     .bind(("0.0.0.0", port))?
