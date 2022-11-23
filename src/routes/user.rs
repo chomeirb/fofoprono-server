@@ -82,12 +82,12 @@ async fn del_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpRespon
 #[post("/login")]
 async fn login(
     pool: web::Data<DbPool>,
-    user: web::Json<(String, String)>,
+    user: web::Json<UniqueUser>,
     req: HttpRequest,
 ) -> Result<HttpResponse, Error> {
     let User { id, .. } = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::credentials_get_user(conn, user.0.0, user.0.1)
+        actions::credentials_get_user(conn, user.0)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
