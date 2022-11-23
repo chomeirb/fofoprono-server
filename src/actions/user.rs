@@ -25,15 +25,14 @@ pub fn name_get_user(conn: &mut PgConnection, name: String) -> Result<User, DbEr
 
 pub fn credentials_get_user(
     conn: &mut PgConnection,
-    id: String,
-    password: String,
+    credentials: UniqueUser,
 ) -> Result<User, DbError> {
     let user: User = user::users
         .filter(
             user::active.eq(true).and(
                 user::name
-                    .eq(&id)
-                    .or(user::mail.eq(&id)),
+                    .eq(credentials.name)
+                    .or(user::mail.eq(credentials.mail)),
             ),
         )
         .get_result(conn)?;
@@ -42,7 +41,7 @@ pub fn credentials_get_user(
         PasswordHash::new(&user.password).map_err(|err| DbError::from(err.to_string()))?;
 
     if Argon2::default()
-        .verify_password(password.as_bytes(), &parsed_hash)
+        .verify_password(credentials.password.as_bytes(), &parsed_hash)
         .is_ok()
     {
         Ok(user)
