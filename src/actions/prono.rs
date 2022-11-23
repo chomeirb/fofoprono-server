@@ -60,7 +60,10 @@ pub fn get_pronos(
     conn: &mut PgConnection,
     user_id: Option<i32>,
 ) -> Result<Vec<(Option<PronoResult>, Game)>, DbError> {
-    let games: Vec<Game> = game::get_games(conn)?;
+    let mut games: Vec<Game> = game::get_games(conn)?;
+    games.sort_by(|game1, game2| {
+        game1.time.cmp(&game2.time)
+    });
 
     Ok(if let Some(id) = user_id {
         prono::pronos.filter(prono::user_id.eq(id)).load(conn)?
