@@ -26,8 +26,6 @@ async fn main() -> std::io::Result<()> {
         .build(manager)
         .expect("Failed to create pool.");
 
-    let domain = env::var("DOMAIN").expect("DOMAIN must be set");
-
     let key = env::var("COOKEY").expect("COOKEY must be set");
     let secret_key = Key::from(key.as_bytes());
 
@@ -42,11 +40,15 @@ async fn main() -> std::io::Result<()> {
                 .cookie_http_only(true)
                 .cookie_secure(true)
                 .build();
+        
+        let domain = env::var("DOMAIN").expect("DOMAIN must be set");
 
         App::new()
             .wrap(
                 Cors::default()
-                    .allowed_origin(&domain)
+                    .allowed_origin_fn(move |origin, _req_head| {
+                        origin.as_bytes().ends_with(domain.as_bytes())
+                    })
                     .allowed_headers([header::CONTENT_TYPE])
                     .allowed_methods(["GET", "POST", "DELETE"])
                     .supports_credentials(),
