@@ -11,8 +11,11 @@ use crate::{
     schema::users::dsl as user,
 };
 
-pub fn get_users(conn: &mut PgConnection) -> Result<Vec<User>, DbError> {
-    Ok(user::users.filter(user::active.eq(true)).load(conn)?)
+pub fn get_users_ordered(conn: &mut PgConnection) -> Result<Vec<User>, DbError> {
+    Ok(user::users
+        .filter(user::active.eq(true))
+        .order(user::score.desc())
+        .load(conn)?)
 }
 
 pub fn get_user(conn: &mut PgConnection, user_id: i32) -> Result<User, DbError> {
@@ -25,15 +28,14 @@ pub fn name_get_user(conn: &mut PgConnection, name: String) -> Result<User, DbEr
 
 pub fn credentials_get_user(
     conn: &mut PgConnection,
-    credentials: UniqueUser,
+    id: String,
+    password: String,
 ) -> Result<User, DbError> {
     let user: User = user::users
         .filter(
-            user::active.eq(true).and(
-                user::name
-                    .eq(credentials.name)
-                    .or(user::mail.eq(credentials.mail)),
-            ),
+            user::active
+                .eq(true)
+                .and(user::name.eq(&id).or(user::mail.eq(&id))),
         )
         .get_result(conn)?;
 
@@ -41,7 +43,7 @@ pub fn credentials_get_user(
         PasswordHash::new(&user.password).map_err(|err| DbError::from(err.to_string()))?;
 
     if Argon2::default()
-        .verify_password(credentials.password.as_bytes(), &parsed_hash)
+        .verify_password(password.as_bytes(), &parsed_hash)
         .is_ok()
     {
         Ok(user)

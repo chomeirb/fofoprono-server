@@ -11,7 +11,7 @@ mod common {
         Insertable, RunQueryDsl, Table,
     };
 
-    pub fn get_rows<'a, T, M>(conn: &mut PgConnection, table: T) -> Result<Vec<M>, DbError>
+    pub fn _get_rows<'a, T, M>(conn: &mut PgConnection, table: T) -> Result<Vec<M>, DbError>
     where
         T: LoadQuery<'a, PgConnection, M>,
     {

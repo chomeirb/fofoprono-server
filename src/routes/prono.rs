@@ -65,7 +65,7 @@ async fn get_games(
         actions::get_pronos(conn, id)
     })
     .await?
-    .map_err(error::ErrorInternalServerError)?;
+    .map_err(error::ErrorNotFound)?;
 
     Ok(HttpResponse::Ok().json(games))
 }
