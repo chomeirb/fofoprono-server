@@ -9,7 +9,7 @@ use std::env;
 
 use actix_cors::Cors;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_web::{cookie::Key, web, App, HttpServer, http::header};
+use actix_web::{cookie::Key, http::header, web, App, HttpServer};
 use diesel::{
     r2d2::{self, ConnectionManager},
     PgConnection,
@@ -41,6 +41,8 @@ async fn main() -> std::io::Result<()> {
                 .cookie_secure(true)
                 .build();
         
+        let domain = env::var("DOMAIN").expect("DOMAIN must be set");
+
         let domain = env::var("DOMAIN").expect("DOMAIN must be set");
 
         App::new()
