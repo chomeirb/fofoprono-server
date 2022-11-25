@@ -55,14 +55,19 @@ async fn get_games(
     user: Option<Auth<i32>>,
     path: Option<web::Path<String>>,
 ) -> Result<HttpResponse, Error> {
-    let mut id = user.get();
+    let id = user.get();
 
     let games = web::block(move || {
         let conn = &mut pool.get()?;
         if let Some(name) = path.map(|path| path.into_inner()) {
-            id = Some(actions::name_get_user(conn, name)?.id)
+            let id = Some(actions::name_get_user(conn, name)?.id);
+            actions::get_pronos(conn, id).map(|mut games| {
+                games.retain(|(_, game)| game.time.elapsed().is_ok());
+                games
+            })
+        } else {
+            actions::get_pronos(conn, id)
         }
-        actions::get_pronos(conn, id)
     })
     .await?
     .map_err(error::ErrorNotFound)?;
