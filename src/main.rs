@@ -40,8 +40,6 @@ async fn main() -> std::io::Result<()> {
                 .cookie_http_only(true)
                 .cookie_secure(true)
                 .build();
-        
-        let domain = env::var("DOMAIN").expect("DOMAIN must be set");
 
         let domain = env::var("DOMAIN").expect("DOMAIN must be set");
 
