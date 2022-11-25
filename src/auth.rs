@@ -1,13 +1,11 @@
 use std::{
     any::type_name,
     future::{ready, Ready},
-    time::Duration,
 };
 
 use actix_session::{Session, SessionExt, SessionInsertError};
 use actix_web::{error, FromRequest, HttpRequest};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use time::OffsetDateTime;
+use serde::{de::DeserializeOwned, Serialize};
 
 pub struct Auth<T>(AuthInner<T>);
 
@@ -86,21 +84,21 @@ impl<T> AuthKey<T> for T {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-struct Deadline {
-    start: i64,
-    duration: Duration,
-}
+// #[derive(Serialize, Deserialize)]
+// struct Deadline {
+//     start: i64,
+//     duration: Duration,
+// }
 
-impl Deadline {
-    fn _valid_for(duration: Duration) -> Self {
-        let start = OffsetDateTime::now_utc().unix_timestamp();
-        Self { start, duration }
-    }
+// impl Deadline {
+//     fn _valid_for(duration: Duration) -> Self {
+//         let start = OffsetDateTime::now_utc().unix_timestamp();
+//         Self { start, duration }
+//     }
 
-    fn _is_valid(&self) -> bool {
-        let now = OffsetDateTime::now_utc();
-        let start = OffsetDateTime::from_unix_timestamp(self.start).expect("Overflowed time...");
-        now - start < self.duration
-    }
-}
+//     fn _is_valid(&self) -> bool {
+//         let now = OffsetDateTime::now_utc();
+//         let start = OffsetDateTime::from_unix_timestamp(self.start).expect("Overflowed time...");
+//         now - start < self.duration
+//     }
+// }

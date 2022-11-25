@@ -55,22 +55,25 @@ async fn main() -> std::io::Result<()> {
             )
             .app_data(web::Data::new(pool.clone()))
             .wrap(session_mw)
-            .service(
-                actix_web::Scope::new("")
-                    .service(index)
-                    .service(signup_process)
-                    .service(signup_user)
-                    .service(login)
-                    .service(logout)
-                    .service(get_user)
-                    .service(del_user)
-                    .service(add_pronos)
-                    .service(delete_pronos)
-                    .service(get_games)
-                    .service(ranking),
-            )
+            .service(time)
+            .service(index)
+            .service(signup_process)
+            .service(signup_user)
+            .service(login)
+            .service(logout)
+            .service(get_user)
+            .service(del_user)
+            .service(add_pronos)
+            .service(delete_pronos)
+            .service(get_games)
+            .service(ranking)
     })
     .bind(("0.0.0.0", port))?
     .run()
     .await
+}
+
+#[actix_web::get("/time")]
+async fn time() -> Result<actix_web::HttpResponse, actix_web::Error> {
+    Ok(actix_web::HttpResponse::Ok().json(std::time::SystemTime::now()))
 }

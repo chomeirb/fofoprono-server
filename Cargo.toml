@@ -18,5 +18,4 @@ serde = { version = "1", features = ["derive"] }
 lettre = { version = "0", features = ["rustls-tls"] }
 rand = "0"
 nanoid = "0"
-time = "0"
 argon2 = "0"

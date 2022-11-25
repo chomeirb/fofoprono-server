@@ -7,3 +7,4 @@
 /migrations/2022-10-16-031738_insert_pronos
 Cargo.lock
 .DS_Store
+migrations/2022-11-25-013714_insert_users
