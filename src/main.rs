@@ -43,6 +43,8 @@ async fn main() -> std::io::Result<()> {
         .expect("PORT must be a number");
 
     HttpServer::new(move || {
+        let domain = env::var("DOMAIN").expect("DOMAIN must be set");
+        
         let session_mw =
             SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
                 .session_lifecycle(SessionLifecycle::PersistentSession(
@@ -53,7 +55,6 @@ async fn main() -> std::io::Result<()> {
                 .cookie_secure(true)
                 .build();
 
-        let domain = env::var("DOMAIN").expect("DOMAIN must be set");
 
         App::new()
             .wrap(
@@ -61,7 +62,7 @@ async fn main() -> std::io::Result<()> {
                     .allowed_origin_fn(move |origin, _req_head| {
                         origin.as_bytes().ends_with(domain.as_bytes())
                     })
-                    .allowed_headers([header::CONTENT_TYPE])
+                    .allowed_headers([header::CONTENT_TYPE, header::COOKIE])
                     .allowed_methods(["GET", "POST", "DELETE"])
                     .supports_credentials(),
             )
