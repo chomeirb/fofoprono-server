@@ -14,14 +14,14 @@ async fn add_pronos(
         .into_iter()
         .map(move |prediction| Prono::from((user_id, prediction)));
 
-    let pronos = web::block(move || {
+    let _pronos = web::block(move || {
         let conn = &mut pool.get()?;
         actions::process_pronos(conn, predictions)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Ok().json(pronos))
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[delete("/prono")]
@@ -36,38 +36,41 @@ async fn delete_pronos(
         .into_iter()
         .map(move |prediction| Prono::from((user_id, prediction)));
 
-    let pronos = web::block(move || {
+    let _pronos = web::block(move || {
         let conn = &mut pool.get()?;
         actions::delete_pronos(conn, predictions)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Ok().json(pronos))
+    Ok(HttpResponse::Ok().finish())
 }
 
 /// Fetches games AND user pronos if authentified (otherwise pronos are null) in a tuple. Can also get any user's pronos with path
 #[routes]
 #[get("/prono")]
-#[get("/prono/{user}")]
+#[get("/prono/{name}")]
 async fn get_games(
     pool: web::Data<DbPool>,
     user: Option<Auth<i32>>,
-    path: Option<web::Path<String>>,
+    name: Option<web::Path<String>>,
 ) -> Result<HttpResponse, Error> {
     let id = user.get();
 
     let games = web::block(move || {
         let conn = &mut pool.get()?;
-        if let Some(name) = path.map(|path| path.into_inner()) {
-            let id = Some(actions::name_get_user(conn, name)?.id);
-            actions::get_pronos(conn, id).map(|mut games| {
-                games.retain(|(_, game)| game.time.elapsed().is_ok());
-                games
-            })
-        } else {
-            actions::get_pronos(conn, id)
-        }
+
+        let Some(name) = name.map(|path| path.into_inner()) else {
+            return actions::get_pronos(conn, id);
+        };
+
+        let id = Some(actions::name_get_user(conn, name)?.id);
+        actions::get_pronos(conn, id).map(|games| {
+            games
+                .into_iter()
+                .filter(|prono_game| prono_game.1.time.elapsed().is_ok())
+                .collect()
+        })
     })
     .await?
     .map_err(error::ErrorNotFound)?;
