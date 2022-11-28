@@ -67,7 +67,6 @@ async fn main() -> std::io::Result<()> {
             )
             .app_data(web::Data::new(pool.clone()))
             .wrap(session_mw)
-            .service(time)
             .service(signup_process)
             .service(signup_user)
             .service(login)
@@ -82,9 +81,4 @@ async fn main() -> std::io::Result<()> {
     .bind(("0.0.0.0", port))?
     .run()
     .await
-}
-
-#[actix_web::get("/time")]
-async fn time() -> Result<actix_web::HttpResponse, actix_web::Error> {
-    Ok(actix_web::HttpResponse::Ok().json(std::time::SystemTime::now()))
 }
