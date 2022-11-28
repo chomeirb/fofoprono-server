@@ -2,15 +2,6 @@ use crate::{routes::common::*, utils::mail::send_mail};
 
 use std::env;
 
-#[get("/")]
-async fn index(user: Option<Auth<i32>>) -> HttpResponse {
-    if let Some(user) = user {
-        HttpResponse::Ok().body(format!("Hello user {}", user.get()))
-    } else {
-        HttpResponse::Ok().body("Hello anonymous!")
-    }
-}
-
 #[get("/user")]
 async fn get_user(pool: web::Data<DbPool>, user: Auth<i32>) -> Result<HttpResponse, Error> {
     let id = user.get();

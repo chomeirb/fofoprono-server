@@ -8,8 +8,16 @@ mod utils;
 use std::env;
 
 use actix_cors::Cors;
-use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_web::{cookie::Key, http::header, web, App, HttpServer};
+use actix_session::{
+    config::{PersistentSession, SessionLifecycle},
+    storage::CookieSessionStore,
+    SessionMiddleware,
+};
+use actix_web::{
+    cookie::{time::Duration, Key, SameSite},
+    http::header,
+    web, App, HttpServer,
+};
 use diesel::{
     r2d2::{self, ConnectionManager},
     PgConnection,
@@ -37,6 +45,10 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         let session_mw =
             SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
+                .session_lifecycle(SessionLifecycle::PersistentSession(
+                    PersistentSession::default().session_ttl(Duration::weeks(4)),
+                ))
+                .cookie_same_site(SameSite::None)
                 .cookie_http_only(true)
                 .cookie_secure(true)
                 .build();
@@ -55,8 +67,6 @@ async fn main() -> std::io::Result<()> {
             )
             .app_data(web::Data::new(pool.clone()))
             .wrap(session_mw)
-            .service(time)
-            .service(index)
             .service(signup_process)
             .service(signup_user)
             .service(login)
@@ -71,9 +81,4 @@ async fn main() -> std::io::Result<()> {
     .bind(("0.0.0.0", port))?
     .run()
     .await
-}
-
-#[actix_web::get("/time")]
-async fn time() -> Result<actix_web::HttpResponse, actix_web::Error> {
-    Ok(actix_web::HttpResponse::Ok().json(std::time::SystemTime::now()))
 }
