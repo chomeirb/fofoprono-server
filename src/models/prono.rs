@@ -28,7 +28,7 @@ pub struct Prono {
 #[diesel(table_name = pronos)]
 pub struct PronoResult {
     #[diesel(embed)]
-    pub prediction: Prediction,
+    pub prediction: Option<Prediction>,
     pub result: Option<PredictionResult>,
 }
 
@@ -52,11 +52,11 @@ impl From<Prono> for PronoResult {
         }: Prono,
     ) -> Self {
         Self {
-            prediction: Prediction {
+            prediction: Some(Prediction {
                 game_id,
                 prediction_home,
                 prediction_away,
-            },
+            }),
             result,
         }
     }
