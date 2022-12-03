@@ -50,7 +50,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: ./docker-compose.yml
+        source: ./docker-compose.dev.yml
         target: /srv/fofoprono/api/dev
 
     - name: Extract metadata (tags, labels) for Docker
