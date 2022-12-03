@@ -1,9 +1,9 @@
 services:
-    api:
-      container_name: fofoprono-api
+    api-dev:
+      container_name: fofoprono-api-dev
       image: ${IMAGE}
       depends_on:
-        - db
+        - db-dev
       environment:
         - DATABASE_URL
         - POSTGRES_PASSWORD
@@ -16,13 +16,13 @@ services:
       ports:
         - ${API_PORT}:${API_PORT}
   
-    db:
-      container_name: fofoprono-db
+    db-dev:
+      container_name: fofoprono-db-dev
       image: postgres:14-alpine
       environment:
         - POSTGRES_PASSWORD
       ports:
-        - 5432:5432
+        - 5433:5432
       volumes:
         - ./db-data:/var/lib/postgresql/data
   
