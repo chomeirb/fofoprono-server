@@ -14,7 +14,7 @@ services:
         - MAIL_PASSWORD
         - COOKEY
       ports:
-        - ${API_PORT}:8080
+        - ${API_PORT}:${API_PORT}
   
     db:
       container_name: fofoprono-db

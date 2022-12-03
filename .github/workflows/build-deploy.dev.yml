@@ -51,7 +51,7 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         source: ./docker-compose.dev.yml
-        target: /srv/fofoprono/api/dev
+        target: /srv/fofoprono/dev/api
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
@@ -76,7 +76,7 @@ jobs:
           export MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
           export COOKEY="${{ secrets.COOKEY }}"
           printenv
-          cd /srv/fofoprono/api/dev
+          cd /srv/fofoprono/dev/api
           docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
           docker-compose -f docker-compose.dev.yml pull
           docker-compose -f docker-compose.dev.yml up -d
