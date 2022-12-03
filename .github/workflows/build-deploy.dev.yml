@@ -78,5 +78,5 @@ jobs:
           printenv
           cd /srv/fofoprono/api/dev
           docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-          docker-compose pull
-          docker-compose up -d
+          docker-compose -f docker-compose.dev.yml pull
+          docker-compose -f docker-compose.dev.yml up -d
