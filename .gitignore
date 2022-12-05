@@ -1,7 +1,7 @@
 /target
 /db-data
 .timetracker
-.env
+.env*
 .fleet
 /migrations/2022-10-09-040457_insert_users
 /migrations/2022-10-16-031738_insert_pronos
