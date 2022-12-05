@@ -1,4 +1,4 @@
-use crate::{routes::common::*, utils::mail::send_mail};
+use crate::{routes::common::*, utils::mail::*};
 
 use std::env;
 
@@ -24,7 +24,7 @@ async fn signup_process(
         let conn = &mut pool.get()?;
         let User { id, name, mail, .. } = actions::add_user(conn, user.0)?;
         let Hash { id, .. } = actions::add_hash(conn, NewHash { user_id: id })?;
-        send_mail(name, mail, id)
+        send_confirmation_mail(name, mail, id)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -91,5 +91,32 @@ async fn login(
 #[post("/logout")]
 async fn logout(user: Auth<i32>) -> Result<HttpResponse, Error> {
     user.logout();
+    Ok(HttpResponse::Ok().finish())
+}
+
+#[post("/contact")]
+async fn contact(
+    pool: web::Data<DbPool>,
+    auth: Option<Auth<i32>>,
+    mail: web::Json<(String, String, String)>,
+) -> Result<HttpResponse, Error> {
+    // If auth, retreive pseudo and email from user, else use the ones provided
+    let (name, email) = match auth {
+        Some(auth) => {
+            let id = auth.get();
+            let user = web::block(move || {
+                let conn = &mut pool.get()?;
+                actions::get_user(conn, id)
+            })
+            .await?
+            .map_err(error::ErrorInternalServerError)?;
+            (user.name, user.mail)
+        }
+        None => (mail.0 .0, mail.0 .1),
+    };
+
+    // Send the mail
+    send_contact_mail(name, email, mail.0 .2).map_err(error::ErrorInternalServerError)?;
+
     Ok(HttpResponse::Ok().finish())
 }

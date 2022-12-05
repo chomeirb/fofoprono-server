@@ -44,7 +44,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let domain = env::var("DOMAIN").expect("DOMAIN must be set");
-        
+
         let session_mw =
             SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
                 .session_lifecycle(SessionLifecycle::PersistentSession(
@@ -54,7 +54,6 @@ async fn main() -> std::io::Result<()> {
                 .cookie_http_only(true)
                 .cookie_secure(true)
                 .build();
-
 
         App::new()
             .wrap(
@@ -78,6 +77,7 @@ async fn main() -> std::io::Result<()> {
             .service(delete_pronos)
             .service(get_games)
             .service(ranking)
+            .service(contact)
     })
     .bind(("0.0.0.0", port))?
     .run()
