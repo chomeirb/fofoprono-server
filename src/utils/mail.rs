@@ -7,16 +7,11 @@ use crate::actions::DbError;
 pub fn send_mail(username: String, to: String, hash: String) -> Result<Response, DbError> {
     // Parse url from env file
     let api_url = std::env::var("API_URL").expect("API_URL must be set");
-    let mail_username = std::env::var("MAIL_USERNAME").expect("MAIL_USERNAME must be set");
-    let mail_password = std::env::var("MAIL_PASSWORD").expect("MAIL_PASSWORD must be set");
+    let smtp_host = std::env::var("SMTP_HOST").expect("SMTP_HOST must be set");
+    let smtp_username = std::env::var("SMTP_USERNAME").expect("SMTP_USERNAME must be set");
+    let smtp_password = std::env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set");
 
     let email = Message::builder()
-        .from(
-            ["fofoprono <", &mail_username, ">"]
-                .join("")
-                .parse()
-                .unwrap(),
-        )
         .to([&username, "<", &to, ">"].join("").parse().unwrap())
         .subject("Welcome to Fofoprono!")
         .body(
@@ -30,9 +25,9 @@ pub fn send_mail(username: String, to: String, hash: String) -> Result<Response,
         )
         .unwrap();
 
-    let creds = Credentials::new(mail_username, mail_password);
+    let creds = Credentials::new(smtp_username, smtp_password);
 
-    let mailer = SmtpTransport::relay("smtp.zoho.eu")
+    let mailer = SmtpTransport::relay(&smtp_host)
         .unwrap()
         .credentials(creds)
         .build();

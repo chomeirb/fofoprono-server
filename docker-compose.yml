@@ -10,8 +10,8 @@ services:
         - PORT=${API_PORT}
         - DOMAIN
         - API_URL
-        - MAIL_USERNAME
-        - MAIL_PASSWORD
+        - SMTP_USERNAME
+        - SMTP_PASSWORD
         - COOKEY
       ports:
         - ${API_PORT}:${API_PORT}
