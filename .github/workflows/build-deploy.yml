@@ -66,16 +66,16 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          export IMAGE='${{ steps.meta.outputs.tags }}'
-          export DATABASE_URL='${{ secrets.DATABASE_URL }}'
-          export POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'
-          export API_URL='${{ secrets.API_URL }}'
-          export API_PORT='${{ secrets.API_PORT }}'
-          export DOMAIN='${{ secrets.DOMAIN }}'
+          export IMAGE="${{ steps.meta.outputs.tags }}"
+          export DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+          export API_URL="${{ secrets.API_URL }}"
+          export API_PORT="${{ secrets.API_PORT }}"
+          export DOMAIN="${{ secrets.DOMAIN }}"
           export SMTP_HOST="${{ secrets.SMTP_HOST }}"
-          export SMTP_USERNAME='${{ secrets.SMTP_USERNAME }}'
-          export SMTP_PASSWORD='${{ secrets.SMTP_PASSWORD }}'
-          export COOKEY='${{ secrets.COOKEY }}'
+          export SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}"
+          export SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
+          export COOKEY="${{ secrets.COOKEY }}"
           printenv
           cd /srv/fofoprono/prod/api
           docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}

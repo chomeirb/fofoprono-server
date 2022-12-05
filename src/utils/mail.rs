@@ -12,6 +12,12 @@ pub fn send_mail(username: String, to: String, hash: String) -> Result<Response,
     let smtp_password = std::env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set");
 
     let email = Message::builder()
+        .from(
+            ["Fofoprono <", &smtp_username, "@", &smtp_host, ">"]
+                .join("")
+                .parse()
+                .unwrap(),
+        )
         .to([&username, "<", &to, ">"].join("").parse().unwrap())
         .subject("Welcome to Fofoprono!")
         .body(
