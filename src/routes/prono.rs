@@ -10,13 +10,14 @@ async fn add_pronos(
 ) -> Result<HttpResponse, Error> {
     let (user_id, predictions) = (user.get(), req.into_inner());
 
-    let predictions = predictions
-        .into_iter()
-        .map(move |prediction| Prono::from((user_id, prediction)));
-
     let _pronos = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::process_pronos(conn, predictions)
+        let filtered = predictions
+            .into_iter()
+            .map(|prediction| Prono::from((user_id, prediction)))
+            .filter(|prono| actions::is_incoming(conn, prono.game_id))
+            .collect();
+        actions::process_pronos(conn, filtered)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -32,13 +33,14 @@ async fn delete_pronos(
 ) -> Result<HttpResponse, Error> {
     let (user_id, predictions) = (user.get(), req.into_inner());
 
-    let predictions = predictions
-        .into_iter()
-        .map(move |prediction| Prono::from((user_id, prediction)));
-
     let _pronos = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::delete_pronos(conn, predictions)
+        let filtered = predictions
+            .into_iter()
+            .map(|prediction| Prono::from((user_id, prediction)))
+            .filter(|prono| actions::is_incoming(conn, prono.game_id))
+            .collect();
+        actions::delete_pronos(conn, filtered)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
