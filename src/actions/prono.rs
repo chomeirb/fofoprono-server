@@ -6,12 +6,11 @@ use crate::{
     schema::pronos::dsl as prono,
 };
 
-fn is_incoming(conn: &mut PgConnection, game_id: i32) -> Result<(), DbError> {
-    if game::get_game(conn, game_id)?.time.elapsed().is_err() {
-        Ok(())
-    } else {
-        Err(DbError::from("Cannot modify pronos for past games"))
-    }
+pub fn is_incoming(conn: &mut PgConnection, game_id: i32) -> bool {
+    let Ok(game) = game::get_game(conn, game_id) else {
+        return false;
+    };
+    game.time.elapsed().is_err()
 }
 
 pub fn get_prono(conn: &mut PgConnection, user_id: i32, game_id: i32) -> Result<Prono, DbError> {
@@ -19,12 +18,10 @@ pub fn get_prono(conn: &mut PgConnection, user_id: i32, game_id: i32) -> Result<
 }
 
 fn add_prono(conn: &mut PgConnection, prono: Prono) -> Result<Prono, DbError> {
-    is_incoming(conn, prono.game_id)?;
     add_row(conn, prono::pronos, prono)
 }
 
 fn update_prono(conn: &mut PgConnection, prono: Prono) -> Result<Prono, DbError> {
-    is_incoming(conn, prono.game_id)?;
     Ok(
         diesel::update(&get_prono(conn, prono.user_id, prono.game_id)?)
             .set((
@@ -36,24 +33,21 @@ fn update_prono(conn: &mut PgConnection, prono: Prono) -> Result<Prono, DbError>
 }
 
 pub fn delete_prono(conn: &mut PgConnection, prono: Prono) -> Result<Prono, DbError> {
-    is_incoming(conn, prono.game_id)?;
     Ok(diesel::delete(&get_prono(conn, prono.user_id, prono.game_id)?).get_result(conn)?)
 }
 
-pub fn process_pronos(
-    conn: &mut PgConnection,
-    pronos: impl Iterator<Item = Prono>,
-) -> Result<Vec<Prono>, DbError> {
+pub fn process_pronos(conn: &mut PgConnection, pronos: Vec<Prono>) -> Result<Vec<Prono>, DbError> {
     pronos
+        .into_iter()
         .map(|prono| update_prono(conn, prono.clone()).or_else(|_| add_prono(conn, prono)))
         .collect()
 }
 
-pub fn delete_pronos(
-    conn: &mut PgConnection,
-    pronos: impl Iterator<Item = Prono>,
-) -> Result<Vec<Prono>, DbError> {
-    pronos.map(|prono| delete_prono(conn, prono)).collect()
+pub fn delete_pronos(conn: &mut PgConnection, pronos: Vec<Prono>) -> Result<Vec<Prono>, DbError> {
+    pronos
+        .into_iter()
+        .map(|prono| delete_prono(conn, prono))
+        .collect()
 }
 
 pub fn get_pronos(
@@ -75,7 +69,7 @@ pub fn get_pronos(
         (
             prono.unwrap_or_else(|| PronoResult {
                 prediction: None,
-                result: if is_incoming(conn, game.id).is_err() {
+                result: if user_id.is_some() && !is_incoming(conn, game.id) {
                     Some(PredictionResult::Wrong)
                 } else {
                     None

@@ -10,12 +10,13 @@ services:
         - PORT=${API_PORT}
         - DOMAIN
         - API_URL
-        - MAIL_USERNAME
-        - MAIL_PASSWORD
+        - SMTP_HOST
+        - SMTP_USERNAME
+        - SMTP_PASSWORD
         - COOKEY
       ports:
         - ${API_PORT}:${API_PORT}
-  
+
     db:
       container_name: fofoprono-db
       image: postgres:14-alpine
@@ -24,5 +25,6 @@ services:
       ports:
         - 5432:5432
       volumes:
-        - ./db-data:/var/lib/postgresql/data
-  
+        - db-data:/var/lib/postgresql/data
+volumes:
+  db-data:

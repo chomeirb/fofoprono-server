@@ -1,9 +1,9 @@
 services:
-    api-dev:
-      container_name: fofoprono-api-dev
-      image: ${IMAGE}
+    api:
+      container_name: fofoprono-api
+      image: ghcr.io/chomeirb/fofoprono-server:main
       depends_on:
-        - db-dev
+        - db
       environment:
         - DATABASE_URL
         - POSTGRES_PASSWORD
@@ -16,13 +16,16 @@ services:
         - COOKEY
       ports:
         - ${API_PORT}:${API_PORT}
-
-    db-dev:
-      container_name: fofoprono-db-dev
+  
+    db:
+      container_name: fofoprono-db
       image: postgres:14-alpine
       environment:
         - POSTGRES_PASSWORD
       ports:
-        - 5433:5432
+        - 5432:5432
       volumes:
-        - ./db-data:/var/lib/postgresql/data
+        - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:

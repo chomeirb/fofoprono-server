@@ -72,8 +72,9 @@ jobs:
           export API_URL="${{ secrets.API_URL }}"
           export API_PORT="${{ secrets.API_PORT }}"
           export DOMAIN="${{ secrets.DOMAIN }}"
-          export MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
-          export MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
+          export SMTP_HOST="${{ secrets.SMTP_HOST }}"
+          export SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}"
+          export SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
           export COOKEY="${{ secrets.COOKEY }}"
           printenv
           cd /srv/fofoprono/dev/api
