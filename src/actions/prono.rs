@@ -75,7 +75,7 @@ pub fn get_pronos(
         (
             prono.unwrap_or_else(|| PronoResult {
                 prediction: None,
-                result: if is_incoming(conn, game.id).is_err() {
+                result: if user_id.is_some() && is_incoming(conn, game.id).is_err() {
                     Some(PredictionResult::Wrong)
                 } else {
                     None
