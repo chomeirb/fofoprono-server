@@ -83,22 +83,3 @@ impl<T> AuthKey<T> for T {
         "auth.logged_in#".to_owned() + type_name::<T>()
     }
 }
-
-// #[derive(Serialize, Deserialize)]
-// struct Deadline {
-//     start: i64,
-//     duration: Duration,
-// }
-
-// impl Deadline {
-//     fn _valid_for(duration: Duration) -> Self {
-//         let start = OffsetDateTime::now_utc().unix_timestamp();
-//         Self { start, duration }
-//     }
-
-//     fn _is_valid(&self) -> bool {
-//         let now = OffsetDateTime::now_utc();
-//         let start = OffsetDateTime::from_unix_timestamp(self.start).expect("Overflowed time...");
-//         now - start < self.duration
-//     }
-// }
