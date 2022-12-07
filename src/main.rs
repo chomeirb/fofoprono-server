@@ -53,6 +53,7 @@ async fn main() -> std::io::Result<()> {
                 ))
                 .cookie_domain(Some(cookie_domain))
                 .cookie_same_site(SameSite::None)
+                .cookie_name("token".to_owned())
                 .cookie_http_only(true)
                 .cookie_secure(true)
                 .build();
