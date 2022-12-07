@@ -48,7 +48,7 @@ async fn delete_pronos(
     Ok(HttpResponse::Ok().finish())
 }
 
-/// Fetches games AND user pronos if authentified (otherwise pronos are null) in a tuple. Can also get any user's pronos with path
+/// Fetches games AND user pronos if authentified (otherwise pronos are null) in a tuple. Can also get any user's pronos with path.
 #[routes]
 #[get("/prono")]
 #[get("/prono/{name}")]

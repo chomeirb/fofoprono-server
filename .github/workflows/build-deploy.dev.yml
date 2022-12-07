@@ -75,6 +75,7 @@ jobs:
           export SMTP_HOST="${{ secrets.SMTP_HOST }}"
           export SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}"
           export SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
+          export MAINTAINER_MAIL="${{ secrets.MAINTAINER_MAIL }}"
           export COOKEY="${{ secrets.COOKEY }}"
           printenv
           cd /srv/fofoprono/dev/api

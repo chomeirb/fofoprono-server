@@ -44,12 +44,14 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let domain = env::var("DOMAIN").expect("DOMAIN must be set");
+        let cookie_domain = env::var("COOKIE_DOMAIN").expect("COOKIE_DOMAIN must be set");
 
         let session_mw =
             SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
                 .session_lifecycle(SessionLifecycle::PersistentSession(
                     PersistentSession::default().session_ttl(Duration::weeks(4)),
                 ))
+                .cookie_domain(Some(cookie_domain))
                 .cookie_same_site(SameSite::None)
                 .cookie_http_only(true)
                 .cookie_secure(true)
