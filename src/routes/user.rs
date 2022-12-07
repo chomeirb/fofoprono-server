@@ -85,17 +85,7 @@ async fn login(
 
     Auth::authenticate(&req, id)?;
 
-    let mut removal_cookie = actix_web::cookie::Cookie::build("id", "")
-        .path("/")
-        .http_only(true)
-        .domain("api.fofoprono.chomeirb.com")
-        .same_site(actix_web::cookie::SameSite::None)
-        .finish();
-
-    removal_cookie.make_removal();
-
-    let val = header::HeaderValue::from_str(&removal_cookie.to_string()).unwrap();
-    Ok(HttpResponse::Ok().append_header((crate::header::SET_COOKIE, val)).finish())
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[post("/logout")]
