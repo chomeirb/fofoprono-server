@@ -100,7 +100,7 @@ async fn contact(
     auth: Option<Auth<i32>>,
     mail: web::Json<(String, String, String)>,
 ) -> Result<HttpResponse, Error> {
-    // If auth, retreive pseudo and email from user, else use the ones provided
+    // If authenticated, retrieve pseudo and email from user, else use the ones provided
     let (name, email) = match auth {
         Some(auth) => {
             let id = auth.get();
