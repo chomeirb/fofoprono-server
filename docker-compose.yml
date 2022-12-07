@@ -9,6 +9,7 @@ services:
         - POSTGRES_PASSWORD
         - PORT=${API_PORT}
         - DOMAIN
+        - COOKIE_DOMAIN=${DOMAIN}
         - API_URL
         - SMTP_HOST
         - SMTP_USERNAME
