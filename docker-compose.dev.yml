@@ -18,13 +18,3 @@ services:
         - COOKEY
       ports:
         - ${API_PORT}:${API_PORT}
-
-    db-dev:
-      container_name: fofoprono-db-dev
-      image: postgres:14-alpine
-      environment:
-        - POSTGRES_PASSWORD
-      ports:
-        - 5433:5432
-      volumes:
-        - ./db-data:/var/lib/postgresql/data

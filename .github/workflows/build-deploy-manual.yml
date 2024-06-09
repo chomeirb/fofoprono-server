@@ -1,0 +1,68 @@
+name: Manual CI/CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to run tests against"
+        type: environment
+        required: true
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Login to container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  pull-and-deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: "production"
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_WEB_APP_NAME }}
+          slot-name: "production"
+          publish-profile: ${{ secrets.AzureAppService_PublishProfile_92a2ac99aa8448c1bd9c5cf8694bd0db }}
+          images: "ghcr.io/chomeirb//${{ secrets.AzureAppService_ContainerUsername_35876d66822442418db53d84364fe3e3 }}/fofoprono-server:${{ github.sha }}"
+          app-settings: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            API_URL=${{ secrets.API_URL }}
+            API_PORT=${{ secrets.API_PORT }}
+            DOMAIN=${{ secrets.DOMAIN }}
+            SMTP_HOST=${{ secrets.SMTP_HOST }}
+            SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
+            SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+            MAINTAINER_MAIL=${{ secrets.MAINTAINER_MAIL }}
+            COOKEY=${{ secrets.COOKEY }}
