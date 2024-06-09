@@ -10,10 +10,6 @@ pub struct User {
     pub mail: String,
     pub password: String,
 
-    pub score: i32,
-    pub results_good: i32,
-    pub results_perfect: i32,
-
     pub active: bool,
 }
 
@@ -67,19 +63,13 @@ impl From<(i32, &User, UserType)> for RankedUser {
     fn from(
         (
             rank,
-            User {
-                name,
-                score,
-                results_good,
-                results_perfect,
-                ..
-            },
+            user,
             user_type,
         ): (i32, &User, UserType),
     ) -> Self {
         Self {
             rank,
-            name: name.to_string(),
+            name: user.name.to_string(),
             score: *score,
             results_good: *results_good,
             results_perfect: *results_perfect,

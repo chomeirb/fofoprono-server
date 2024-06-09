@@ -4,8 +4,8 @@ use diesel::prelude::*;
 use diesel_derive_enum::DbEnum;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, DbEnum, Clone)]
-#[DieselTypePath = "crate::schema::sql_types::Result"]
+#[derive(DbEnum, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[ExistingTypePath = "crate::schema::sql_types::Result"]
 pub enum PredictionResult {
     Exact,
     Correct,

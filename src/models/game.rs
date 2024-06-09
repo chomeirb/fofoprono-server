@@ -20,10 +20,11 @@ pub struct Game {
     pub odds_home: f64,
     pub odds_away: f64,
     pub odds_draw: f64,
+    pub competition_id: i32,
 }
 
-#[derive(Serialize, Deserialize, Debug, DbEnum, Clone)]
-#[DieselTypePath = "crate::schema::sql_types::Stage"]
+#[derive(DbEnum, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[ExistingTypePath  = "crate::schema::sql_types::Stage"]
 pub enum Stage {
     Group,
     Sixteen,

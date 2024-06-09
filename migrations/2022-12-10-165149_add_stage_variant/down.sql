@@ -1,0 +1,1 @@
+ALTER TYPE STAGE DROP VALUE 'third-place';
