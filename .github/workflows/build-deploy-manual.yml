@@ -1,4 +1,4 @@
-name: Build the development image and deploy to server
+name: Manual CI/CD
 
 on:
   workflow_dispatch:
