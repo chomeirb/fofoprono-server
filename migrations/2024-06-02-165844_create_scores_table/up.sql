@@ -2,7 +2,7 @@
 CREATE TABLE scores (
   PRIMARY KEY(user_id, competition_id),
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  competition_id INTEGER NOT NULL REFERENCES competition(id),
+  competition_id INTEGER NOT NULL REFERENCES competitions(id),
 
   points INT NOT NULL DEFAULT 0,
   good INT NOT NULL DEFAULT 0,

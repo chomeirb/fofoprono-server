@@ -11,7 +11,7 @@ pub mod sql_types {
 }
 
 diesel::table! {
-    competition (id) {
+    competitions (id) {
         id -> Int4,
         #[max_length = 50]
         name -> Varchar,
@@ -82,15 +82,15 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(games -> competition (competition_id));
+diesel::joinable!(games -> competitions (competition_id));
 diesel::joinable!(hashes -> users (user_id));
 diesel::joinable!(pronos -> games (game_id));
 diesel::joinable!(pronos -> users (user_id));
-diesel::joinable!(scores -> competition (competition_id));
+diesel::joinable!(scores -> competitions (competition_id));
 diesel::joinable!(scores -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    competition,
+    competitions,
     games,
     hashes,
     pronos,
