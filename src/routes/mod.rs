@@ -11,13 +11,7 @@ mod common {
 
     #[derive(serde::Deserialize)]
     pub struct CompetitionIds {
-        pub competition_id: Option<i32>,
-    }
-
-    impl CompetitionIds {
-        pub fn get(&self) -> Option<i32> {
-            self.competition_id
-        }
+        pub competition_id: i32,
     }
 }
 

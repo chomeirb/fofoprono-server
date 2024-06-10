@@ -6,29 +6,20 @@ use diesel::prelude::*;
 
 use crate::{
     actions::common::*,
-    models::{Competition, Hash, NewHash, Score, UniqueUser, User},
-    schema::{competitions, hashes, users},
+    models::{Hash, NewHash, Score, UniqueUser, User},
+    schema::{hashes, scores, users},
 };
 
 #[allow(clippy::type_complexity)]
 pub fn get_users_scores(
     conn: &mut PgConnection,
-    competition_id: Option<i32>,
-) -> Result<Vec<(User, Vec<(Score, Competition)>)>, DbError> {
-    let users: Vec<User> = users::table.filter(users::active.eq(true)).load(conn)?;
-
-    let score_query = Score::belonging_to(&users)
-        .inner_join(competitions::table)
-        .into_boxed();
-
-    let score_query = match competition_id {
-        Some(ids) => score_query.filter(competitions::id.eq(ids)),
-        None => score_query,
-    };
-
-    let scores: Vec<Vec<(Score, Competition)>> = score_query.load(conn)?.grouped_by(&users);
-
-    Ok(users.into_iter().zip(scores).collect::<Vec<_>>())
+    competition_id: i32,
+) -> Result<Vec<(User, Score)>, DbError> {
+    Ok(users::table
+        .filter(users::active.eq(true))
+        .inner_join(scores::table)
+        .filter(scores::competition_id.eq(competition_id))
+        .load(conn)?)
 }
 
 pub fn get_user(conn: &mut PgConnection, user_id: i32) -> Result<User, DbError> {

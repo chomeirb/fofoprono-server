@@ -59,7 +59,7 @@ async fn get_games(
     query: web::Query<CompetitionIds>,
 ) -> Result<HttpResponse, Error> {
     let id = user.get();
-    let competition_id = query.get();
+    let competition_id = query.competition_id;
     let query_name = name.map(|path| path.into_inner());
 
     let games = web::block(move || {
@@ -83,12 +83,10 @@ async fn get_games(
                 (
                     prono.map(|prono| {
                         serde_json::json!({
-                            "prediction": {
-                                "game_id": prono.game_id,
-                                "prediction_home": prono.prediction_home,
-                                "prediction_away": prono.prediction_away,
-                            },
-                            "result": prono.result
+                            "game_id": prono.game_id,
+                            "prediction_home": prono.prediction_home,
+                            "prediction_away": prono.prediction_away,
+                            "result": prono.result,
                         })
                     }),
                     game,

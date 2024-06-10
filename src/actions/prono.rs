@@ -53,7 +53,7 @@ pub fn delete_pronos(conn: &mut PgConnection, pronos: Vec<Prono>) -> Result<Vec<
 pub fn get_pronos(
     conn: &mut PgConnection,
     user_id: Option<i32>,
-    competition_id: Option<i32>,
+    competition_id: i32,
     filter_incoming: bool,
 ) -> Result<Vec<(Game, Option<Prono>)>, DbError> {
     let user_id = user_id.unwrap_or(-999);
@@ -65,12 +65,8 @@ pub fn get_pronos(
                 .eq(games::id)
                 .and(pronos::user_id.eq(user_id).or(pronos::user_id.is_null()))),
         )
+        .filter(games::competition_id.eq(competition_id))
         .into_boxed();
-
-    let query = match competition_id {
-        Some(competition_id) => query.filter(games::competition_id.eq(competition_id)),
-        None => query,
-    };
 
     let query = match filter_incoming {
         true => query.filter(games::time.gt(diesel::dsl::now)),
