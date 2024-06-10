@@ -2,6 +2,18 @@ use actix_web::routes;
 
 use crate::routes::common::*;
 
+#[get("/competitions")]
+async fn get_competitions(pool: web::Data<DbPool>) -> Result<HttpResponse, Error> {
+    let competitions = web::block(move || {
+        let conn = &mut pool.get()?;
+        actions::get_competitions(conn)
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)?;
+
+    Ok(HttpResponse::Ok().json(competitions))
+}
+
 #[post("/prono")]
 async fn add_pronos(
     pool: web::Data<DbPool>,
@@ -88,9 +100,11 @@ async fn get_games(
                 (
                     prono.map(|prono| {
                         serde_json::json!({
-                            "game_id": prono.game_id,
-                            "prediction_home": prono.prediction_home,
-                            "prediction_away": prono.prediction_away,
+                            "prediction": {
+                                "game_id": prono.game_id,
+                                "home": prono.prediction_home,
+                                "away": prono.prediction_away,
+                            },
                             "result": prono.result,
                         })
                     }),

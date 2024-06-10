@@ -2,9 +2,13 @@ use diesel::prelude::*;
 
 use crate::{
     actions::{common::*, game},
-    models::{Game, Prono},
-    schema::{games, pronos},
+    models::{Competition, Game, Prono},
+    schema::{competitions, games, pronos},
 };
+
+pub fn get_competitions(conn: &mut PgConnection) -> Result<Vec<Competition>, DbError> {
+    Ok(competitions::table.load(conn)?)
+}
 
 pub fn is_incoming(conn: &mut PgConnection, game_id: i32) -> bool {
     let Ok(game) = game::get_game(conn, game_id) else {

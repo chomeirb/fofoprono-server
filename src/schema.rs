@@ -32,10 +32,11 @@ diesel::table! {
         team_away -> Varchar,
         score_home -> Nullable<Int4>,
         score_away -> Nullable<Int4>,
-        odds_home -> Float8,
-        odds_away -> Float8,
-        odds_draw -> Float8,
+        odds_home -> Nullable<Float8>,
+        odds_away -> Nullable<Float8>,
+        odds_draw -> Nullable<Float8>,
         competition_id -> Int4,
+        external_api_id -> Nullable<Int4>,
     }
 }
 
