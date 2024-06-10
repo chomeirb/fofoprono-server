@@ -1,32 +1,40 @@
 use crate::routes::common::*;
 
-#[get("/ranking")]
-async fn ranking(pool: web::Data<DbPool>, auth: Option<Auth<i32>>) -> Result<HttpResponse, Error> {
+#[get("ranking")]
+async fn ranking(
+    pool: web::Data<DbPool>,
+    auth: Option<Auth<i32>>,
+    query: web::Query<CompetitionIds>,
+) -> Result<HttpResponse, Error> {
     let users = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::get_users_ordered(conn)
+        actions::get_users_scores(conn, query.competition_id)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
 
     let id = auth.get();
 
-    let mut rank = 1;
-    let scores: Vec<_> = users
-        .iter()
-        .enumerate()
-        .map(|(i, user)| {
-            if i > 0 && Some(true) != users.get(i - 1).map(|user2| user2.score == user.score) {
-                rank = i as i32 + 1;
-            }
-
-            if id == Some(user.id) {
-                RankedUser::from((rank, user, UserType::Current))
-            } else {
-                RankedUser::from((rank, user, UserType::Other))
-            }
-        })
-        .collect();
-
-    Ok(HttpResponse::Ok().json(scores))
+    Ok(HttpResponse::Ok().json(
+        users
+            .into_iter()
+            .map(|(user, scores)| {
+                serde_json::json!({
+                    "name": user.name,
+                    "connected": Some(user.id) == id,
+                    "scores": scores
+                        .into_iter()
+                        .map(|(score, competition)| {
+                            serde_json::json!({
+                                "competition": competition.name,
+                                "points": score.points,
+                                "good": score.good,
+                                "perfect": score.perfect,
+                            })
+                        })
+                        .collect::<Vec<_>>(),
+                })
+            })
+            .collect::<Vec<_>>(),
+    ))
 }

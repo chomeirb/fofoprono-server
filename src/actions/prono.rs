@@ -2,8 +2,8 @@ use diesel::prelude::*;
 
 use crate::{
     actions::{common::*, game},
-    models::{Game, PredictionResult, Prono, PronoResult},
-    schema::pronos::dsl as prono,
+    models::{Game, Prono},
+    schema::{games, pronos},
 };
 
 pub fn is_incoming(conn: &mut PgConnection, game_id: i32) -> bool {
@@ -14,19 +14,19 @@ pub fn is_incoming(conn: &mut PgConnection, game_id: i32) -> bool {
 }
 
 pub fn get_prono(conn: &mut PgConnection, user_id: i32, game_id: i32) -> Result<Prono, DbError> {
-    get_row(conn, prono::pronos, (user_id, game_id))
+    get_row(conn, pronos::table, (user_id, game_id))
 }
 
 fn add_prono(conn: &mut PgConnection, prono: Prono) -> Result<Prono, DbError> {
-    add_row(conn, prono::pronos, prono)
+    add_row(conn, pronos::table, prono)
 }
 
 fn update_prono(conn: &mut PgConnection, prono: Prono) -> Result<Prono, DbError> {
     Ok(
         diesel::update(&get_prono(conn, prono.user_id, prono.game_id)?)
             .set((
-                prono::prediction_home.eq(prono.prediction_home),
-                prono::prediction_away.eq(prono.prediction_away),
+                pronos::prediction_home.eq(prono.prediction_home),
+                pronos::prediction_away.eq(prono.prediction_away),
             ))
             .get_result(conn)?,
     )
@@ -53,30 +53,29 @@ pub fn delete_pronos(conn: &mut PgConnection, pronos: Vec<Prono>) -> Result<Vec<
 pub fn get_pronos(
     conn: &mut PgConnection,
     user_id: Option<i32>,
-) -> Result<Vec<(PronoResult, Game)>, DbError> {
-    let games: Vec<Game> = game::get_games_ordered(conn)?;
+    competition_id: Option<i32>,
+    filter_incoming: bool,
+) -> Result<Vec<(Game, Option<Prono>)>, DbError> {
+    let user_id = user_id.unwrap_or(-999);
 
-    Ok(if let Some(id) = user_id {
-        prono::pronos.filter(prono::user_id.eq(id)).load(conn)?
-    } else {
-        Vec::new()
-    }
-    .grouped_by(&games)
-    .iter_mut()
-    .map(|prono| prono.pop().map(Prono::into))
-    .zip(games)
-    .map(|(prono, game)| {
-        (
-            prono.unwrap_or_else(|| PronoResult {
-                prediction: None,
-                result: if user_id.is_some() && !is_incoming(conn, game.id) {
-                    Some(PredictionResult::Wrong)
-                } else {
-                    None
-                },
-            }),
-            game,
+    let query = games::table
+        .order(games::time)
+        .left_outer_join(
+            pronos::table.on(pronos::game_id
+                .eq(games::id)
+                .and(pronos::user_id.eq(user_id).or(pronos::user_id.is_null()))),
         )
-    })
-    .collect())
+        .into_boxed();
+
+    let query = match competition_id {
+        Some(competition_id) => query.filter(games::competition_id.eq(competition_id)),
+        None => query,
+    };
+
+    let query = match filter_incoming {
+        true => query.filter(games::time.gt(diesel::dsl::now)),
+        false => query,
+    };
+
+    Ok(query.load(conn)?)
 }
