@@ -78,8 +78,11 @@ async fn main() -> std::io::Result<()> {
             .service(del_user)
             .service(add_pronos)
             .service(delete_pronos)
-            .service(get_games)
-            .service(ranking)
+            .service(
+                web::scope("competition/{competition_id}")
+                    .service(get_games)
+                    .service(ranking),
+            )
             .service(contact)
     })
     .bind(("0.0.0.0", port))?

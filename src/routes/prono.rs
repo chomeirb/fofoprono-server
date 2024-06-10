@@ -48,30 +48,35 @@ async fn delete_pronos(
     Ok(HttpResponse::Ok().finish())
 }
 
+#[derive(serde::Deserialize)]
+struct PronoPath {
+    competition_id: i32,
+    username: Option<String>,
+}
+
 /// Fetches games AND user pronos if authentified (otherwise pronos are null) in a tuple. Can also get any user's pronos with path.
 #[routes]
 #[get("/prono")]
-#[get("/prono/{name}")]
+#[get("/prono/{username}")]
 async fn get_games(
     pool: web::Data<DbPool>,
     user: Option<Auth<i32>>,
-    name: Option<web::Path<String>>,
-    query: web::Query<CompetitionIds>,
+    path: web::Path<PronoPath>,
 ) -> Result<HttpResponse, Error> {
     let id = user.get();
-    let competition_id = query.competition_id;
-    let query_name = name.map(|path| path.into_inner());
 
     let games = web::block(move || {
         let conn = &mut pool.get()?;
 
-        let id = query_name
+        let id = path
+            .username
+            .as_ref()
             .map(|name| actions::name_get_user(conn, name))
             .transpose()?
             .map(|user| user.id)
             .or(id);
 
-        actions::get_pronos(conn, id, competition_id, false)
+        actions::get_pronos(conn, id, path.competition_id, false)
     })
     .await?
     .map_err(error::ErrorNotFound)?;

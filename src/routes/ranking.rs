@@ -4,11 +4,11 @@ use crate::routes::common::*;
 async fn ranking(
     pool: web::Data<DbPool>,
     auth: Option<Auth<i32>>,
-    query: web::Query<CompetitionIds>,
+    competition_id: web::Path<i32>,
 ) -> Result<HttpResponse, Error> {
     let result = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::get_users_scores(conn, query.competition_id)
+        actions::get_users_scores_ordered(conn, *competition_id)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -18,14 +18,15 @@ async fn ranking(
     Ok(HttpResponse::Ok().json(
         result
             .into_iter()
-            .map(|(user, score)| {
+            .enumerate()
+            .map(|(rank, (user, score))| {
                 serde_json::json!({
+                    "rank": rank + 1,
                     "name": user.name,
                     "connected": Some(user.id) == id,
                     "points": score.points,
-                    "good": score.good,
-                    "perfect": score.perfect,
-
+                    "results_good": score.good,
+                    "results_perfect": score.perfect,
                 })
             })
             .collect::<Vec<_>>(),

@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[allow(clippy::type_complexity)]
-pub fn get_users_scores(
+pub fn get_users_scores_ordered(
     conn: &mut PgConnection,
     competition_id: i32,
 ) -> Result<Vec<(User, Score)>, DbError> {
@@ -19,6 +19,7 @@ pub fn get_users_scores(
         .filter(users::active.eq(true))
         .inner_join(scores::table)
         .filter(scores::competition_id.eq(competition_id))
+        .order(scores::points.desc())
         .load(conn)?)
 }
 
@@ -26,7 +27,7 @@ pub fn get_user(conn: &mut PgConnection, user_id: i32) -> Result<User, DbError> 
     get_row(conn, users::table, user_id)
 }
 
-pub fn name_get_user(conn: &mut PgConnection, name: String) -> Result<User, DbError> {
+pub fn name_get_user(conn: &mut PgConnection, name: &str) -> Result<User, DbError> {
     Ok(users::table.filter(users::name.eq(name)).get_result(conn)?)
 }
 
