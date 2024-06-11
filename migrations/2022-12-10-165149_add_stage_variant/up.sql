@@ -1,0 +1,1 @@
+ALTER TYPE STAGE ADD VALUE 'third-place' BEFORE 'final';

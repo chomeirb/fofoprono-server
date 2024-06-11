@@ -1,13 +1,21 @@
 // @generated automatically by Diesel CLI.
 
 pub mod sql_types {
-    #[derive(diesel::sql_types::SqlType)]
+    #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "result"))]
     pub struct Result;
 
-    #[derive(diesel::sql_types::SqlType)]
+    #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "stage"))]
     pub struct Stage;
+}
+
+diesel::table! {
+    competitions (id) {
+        id -> Int4,
+        #[max_length = 50]
+        name -> Varchar,
+    }
 }
 
 diesel::table! {
@@ -18,13 +26,17 @@ diesel::table! {
         id -> Int4,
         time -> Timestamp,
         stage -> Stage,
+        #[max_length = 20]
         team_home -> Varchar,
+        #[max_length = 20]
         team_away -> Varchar,
         score_home -> Nullable<Int4>,
         score_away -> Nullable<Int4>,
-        odds_home -> Float8,
-        odds_away -> Float8,
-        odds_draw -> Float8,
+        odds_home -> Nullable<Float8>,
+        odds_away -> Nullable<Float8>,
+        odds_draw -> Nullable<Float8>,
+        competition_id -> Int4,
+        external_api_id -> Nullable<Int4>,
     }
 }
 
@@ -49,20 +61,40 @@ diesel::table! {
 }
 
 diesel::table! {
+    scores (user_id, competition_id) {
+        user_id -> Int4,
+        competition_id -> Int4,
+        points -> Int4,
+        good -> Int4,
+        perfect -> Int4,
+    }
+}
+
+diesel::table! {
     users (id) {
         id -> Int4,
+        #[max_length = 20]
         name -> Varchar,
+        #[max_length = 100]
         mail -> Varchar,
+        #[max_length = 96]
         password -> Varchar,
-        score -> Int4,
-        results_good -> Int4,
-        results_perfect -> Int4,
         active -> Bool,
     }
 }
 
+diesel::joinable!(games -> competitions (competition_id));
 diesel::joinable!(hashes -> users (user_id));
 diesel::joinable!(pronos -> games (game_id));
 diesel::joinable!(pronos -> users (user_id));
+diesel::joinable!(scores -> competitions (competition_id));
+diesel::joinable!(scores -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(games, hashes, pronos, users,);
+diesel::allow_tables_to_appear_in_same_query!(
+    competitions,
+    games,
+    hashes,
+    pronos,
+    scores,
+    users,
+);

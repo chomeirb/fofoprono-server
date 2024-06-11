@@ -1,8 +1,10 @@
-use crate::schema::{hashes as hashs, users};
+use crate::models::Competition;
+use crate::schema::{hashes as hashs, scores, users};
+
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Serialize, Deserialize, Identifiable)]
+#[derive(Queryable, Serialize, Deserialize, Identifiable, Debug)]
 pub struct User {
     pub id: i32,
 
@@ -10,36 +12,7 @@ pub struct User {
     pub mail: String,
     pub password: String,
 
-    pub score: i32,
-    pub results_good: i32,
-    pub results_perfect: i32,
-
     pub active: bool,
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum UserType {
-    Current,
-    Other,
-}
-
-// #[derive(Serialize, Deserialize)]
-// pub struct RatedUser {
-//     pub name: String,
-//     pub score: i32,
-//     pub results_good: i32,
-//     pub results_perfect: i32,
-//     pub user_type: UserType,
-// }
-
-#[derive(Serialize, Deserialize)]
-pub struct RankedUser {
-    pub rank: i32,
-    pub name: String,
-    pub score: i32,
-    pub results_good: i32,
-    pub results_perfect: i32,
-    pub user_type: UserType,
 }
 
 #[derive(Insertable, Serialize, Deserialize)]
@@ -63,27 +36,14 @@ pub struct NewHash {
     pub user_id: i32,
 }
 
-impl From<(i32, &User, UserType)> for RankedUser {
-    fn from(
-        (
-            rank,
-            User {
-                name,
-                score,
-                results_good,
-                results_perfect,
-                ..
-            },
-            user_type,
-        ): (i32, &User, UserType),
-    ) -> Self {
-        Self {
-            rank,
-            name: name.to_string(),
-            score: *score,
-            results_good: *results_good,
-            results_perfect: *results_perfect,
-            user_type,
-        }
-    }
+#[derive(Queryable, Identifiable, Serialize, Deserialize, Associations, Debug)]
+#[diesel(primary_key(user_id, competition_id))]
+#[diesel(belongs_to(User), belongs_to(Competition))]
+pub struct Score {
+    pub user_id: i32,
+    pub competition_id: i32,
+
+    pub points: i32,
+    pub good: i32,
+    pub perfect: i32,
 }
