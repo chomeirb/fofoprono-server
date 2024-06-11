@@ -4,14 +4,12 @@ export interface Odds {
   };
   bookmakers: {
     bets: {
-      values: [
-        {
-          value: MatchWinnerOptions;
-          odd: string;
-        }
-      ];
-    };
-  };
+      values: {
+        value: MatchWinnerOptions;
+        odd: string;
+      }[];
+    }[];
+  }[];
 }
 
 export type MatchWinnerOptions = "Home" | "Draw" | "Away";
