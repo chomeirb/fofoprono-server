@@ -8,6 +8,11 @@ mod common {
 
     use diesel::r2d2;
     pub type DbPool = r2d2::Pool<r2d2::ConnectionManager<diesel::PgConnection>>;
+
+    #[derive(serde::Deserialize)]
+    pub struct CompetitionIds {
+        pub competition_id: i32,
+    }
 }
 
 mod prono;

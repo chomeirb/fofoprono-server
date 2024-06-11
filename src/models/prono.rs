@@ -4,8 +4,8 @@ use diesel::prelude::*;
 use diesel_derive_enum::DbEnum;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, DbEnum, Clone)]
-#[DieselTypePath = "crate::schema::sql_types::Result"]
+#[derive(DbEnum, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[ExistingTypePath = "crate::schema::sql_types::Result"]
 pub enum PredictionResult {
     Exact,
     Correct,
@@ -24,14 +24,6 @@ pub struct Prono {
     pub result: Option<PredictionResult>,
 }
 
-#[derive(Queryable, Insertable, Serialize, Deserialize, Clone)]
-#[diesel(table_name = pronos)]
-pub struct PronoResult {
-    #[diesel(embed)]
-    pub prediction: Option<Prediction>,
-    pub result: Option<PredictionResult>,
-}
-
 // Not able to have embedded foreign key with belongs_to associations: duplicate data
 #[derive(Insertable, Serialize, Deserialize, Clone, Copy)]
 #[diesel(table_name = pronos)]
@@ -41,43 +33,13 @@ pub struct Prediction {
     pub prediction_away: i32,
 }
 
-impl From<Prono> for PronoResult {
-    fn from(
-        Prono {
-            game_id,
-            prediction_home,
-            prediction_away,
-            result,
-            ..
-        }: Prono,
-    ) -> Self {
-        Self {
-            prediction: Some(Prediction {
-                game_id,
-                prediction_home,
-                prediction_away,
-            }),
-            result,
-        }
-    }
-}
-
-impl From<(i32, Prediction)> for Prono {
-    fn from(
-        (
-            user_id,
-            Prediction {
-                game_id,
-                prediction_home,
-                prediction_away,
-            },
-        ): (i32, Prediction),
-    ) -> Self {
+impl Prono {
+    pub fn new(user_id: i32, prediction: Prediction) -> Self {
         Self {
             user_id,
-            game_id,
-            prediction_home,
-            prediction_away,
+            game_id: prediction.game_id,
+            prediction_home: prediction.prediction_home,
+            prediction_away: prediction.prediction_away,
             result: None,
         }
     }

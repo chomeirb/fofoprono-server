@@ -1,0 +1,6 @@
+-- Your SQL goes here
+ALTER TABLE games ADD COLUMN external_api_id INT;
+
+ALTER TABLE games ALTER COLUMN odds_home DROP NOT NULL;
+ALTER TABLE games ALTER COLUMN odds_away DROP NOT NULL;
+ALTER TABLE games ALTER COLUMN odds_draw DROP NOT NULL;
