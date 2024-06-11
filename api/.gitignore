@@ -1,0 +1,7 @@
+/target
+/db-data
+.timetracker
+.env*
+.fleet
+Cargo.lock
+.DS_Store
