@@ -7,6 +7,7 @@ import {
 
 import { ApiFootballClient } from "../../helpers/api-football-client.js";
 import { EURO_2024_ID } from "../../models/database/const.js";
+import { NORDIC_BET_ID } from "../../models/api-football/const.js";
 import { SqlRepository } from "../../helpers/sql-repository.js";
 import { Game } from "../../models/database/game.js";
 
@@ -33,7 +34,7 @@ export async function httpTrigger(
       new Date(fromDate),
       new Date(toDate)
     );
-    var odds = await ApiFootballClient.getOdds();
+    var odds = await ApiFootballClient.getOdds(NORDIC_BET_ID);
 
     var entities = games.map((game) => {
       return {

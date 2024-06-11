@@ -20,10 +20,11 @@ export class ApiFootballClient {
     return await this.fetch<Game>("fixtures", params);
   }
 
-  public static async getOdds() {
+  public static async getOdds(bookmakerId: number) {
     const params = {
       league: leagueId.toString(),
       season: season.toString(),
+      bookmaker: bookmakerId.toString(),
     };
 
     return await this.fetch<Odds>("odds", params);
