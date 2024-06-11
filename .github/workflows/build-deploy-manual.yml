@@ -1,59 +1,63 @@
-name: Manual CI/CD
+name: Build and deploy API (manual)
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Environment to run tests against"
+        description: 'Environment'
         type: environment
         required: true
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE: ${{ github.repository }}
 
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract image metadata (tags, labels)
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE }}
 
       - name: Login to container registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  pull-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     needs: build
     environment: ${{ github.event.inputs.environment }}
 
     steps:
+      - name: Extract image metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE }}
+
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ secrets.AZURE_WEB_APP_NAME }}
-          slot-name: "production"
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_92a2ac99aa8448c1bd9c5cf8694bd0db }}
-          images: "ghcr.io/chomeirb//${{ secrets.AzureAppService_ContainerUsername_35876d66822442418db53d84364fe3e3 }}/fofoprono-server:${{ github.sha }}"
+          app-name: ${{ env.AZURE_WEB_APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEB_APP_PUBLISH_PROFILE }}
+          images: '${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ steps.meta.outputs.tags }}'
           app-settings: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
