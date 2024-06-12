@@ -57,12 +57,12 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ secrets.AZURE_WEB_APP_NAME }}
+          app-name: ${{ vars.AZURE_WEB_APP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEB_APP_PUBLISH_PROFILE }}
           images: ${{ steps.meta.outputs.tags }}
 
       - name: Set Azure Web App app settings
         uses: azure/appservice-settings@v1
         with:
-          app-name: ${{ secrets.AZURE_WEB_APP_NAME }}
+          app-name: ${{ vars.AZURE_WEB_APP_NAME }}
           app-settings-json: '${{ secrets.AZURE_WEB_APP_APP_SETTINGS }}'
