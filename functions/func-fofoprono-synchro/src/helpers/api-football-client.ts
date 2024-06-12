@@ -34,7 +34,6 @@ export class ApiFootballClient {
     endpoint: string,
     params: { [key: string]: string }
   ) {
-    console.log(apiKey);
     const result = await fetch(buildUrl(`${apiBaseUrl}/${endpoint}`, params), {
       method: "GET",
       headers: {

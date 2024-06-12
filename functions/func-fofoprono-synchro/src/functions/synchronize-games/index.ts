@@ -71,7 +71,7 @@ export async function httpTrigger(
       } as Game;
     });
 
-    await new SqlRepository().upsertGames(entities);
+    // await new SqlRepository().upsertGames(entities);
   } catch (e) {
     context.error(e);
     return { status: 500, body: e };
