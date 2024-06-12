@@ -57,7 +57,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEB_APP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEB_APP_PUBLISH_PROFILE }}
-          images: '${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ steps.meta.outputs.tags }}'
+          images: ${{ steps.meta.outputs.tags }}
           app-settings: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
