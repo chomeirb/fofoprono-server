@@ -1,0 +1,73 @@
+name: Build and deploy API
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment'
+        type: environment
+        required: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract image metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE }}
+
+      - name: Login to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || 'development' }}
+    steps:
+      - name: Extract image metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEB_APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEB_APP_PUBLISH_PROFILE }}
+          images: ${{ steps.meta.outputs.tags }}
+          app-settings: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            API_URL=${{ secrets.API_URL }}
+            API_PORT=${{ secrets.API_PORT }}
+            DOMAIN=${{ secrets.DOMAIN }}
+            SMTP_HOST=${{ secrets.SMTP_HOST }}
+            SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
+            SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+            MAINTAINER_MAIL=${{ secrets.MAINTAINER_MAIL }}
+            COOKEY=${{ secrets.COOKEY }}
