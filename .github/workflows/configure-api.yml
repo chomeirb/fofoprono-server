@@ -28,8 +28,8 @@ jobs:
           azcliversion: latest
           inlineScript: |
             az webapp config appsettings set \
-            --name ${{ secrets.AZURE_WEB_APP_NAME }} \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ vars.AZURE_WEB_APP_NAME }} \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --settings \
             API_URL=${{ vars.API_URL }} \
             COOKEY=${{ secrets.COOKEY }} \
