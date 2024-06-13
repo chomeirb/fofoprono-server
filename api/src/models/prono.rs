@@ -29,8 +29,10 @@ pub struct Prono {
 #[diesel(table_name = pronos)]
 pub struct Prediction {
     pub game_id: i32,
-    pub prediction_home: i32,
-    pub prediction_away: i32,
+    #[diesel(column_name = prediction_home)]
+    pub home: i32,
+    #[diesel(column_name = prediction_away)]
+    pub away: i32,
 }
 
 impl Prono {
@@ -38,8 +40,8 @@ impl Prono {
         Self {
             user_id,
             game_id: prediction.game_id,
-            prediction_home: prediction.prediction_home,
-            prediction_away: prediction.prediction_away,
+            prediction_home: prediction.home,
+            prediction_away: prediction.away,
             result: None,
         }
     }
