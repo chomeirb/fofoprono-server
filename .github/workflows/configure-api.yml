@@ -1,0 +1,44 @@
+name: Configure API settings
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment'
+        type: environment
+        required: true
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    permissions:
+      id-token: write
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+
+      - name: Set Azure Web App settings
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az webapp config appsettings set \
+            --name ${{ secrets.AZURE_WEB_APP_NAME }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --settings \
+            API_URL='${{ vars.API_URL }}' \
+            COOKEY='${{ secrets.COOKEY }}' \
+            COOKIE_DOMAIN='${{ vars.COOKIE_DOMAIN }}' \
+            DATABASE_URL='${{ secrets.DATABASE_URL }}' \
+            DOMAIN='${{ vars.DOMAIN }}' \
+            MAINTAINER_MAIL='${{ vars.MAINTAINER_MAIL }}' \
+            PORT='${{ vars.API_PORT }}' \
+            SMTP_HOST='${{ vars.SMTP_HOST }}' \
+            SMTP_PASSWORD='${{ secrets.SMTP_PASSWORD }}' \
+            SMTP_PORT='${{ vars.SMTP_PORT }}' \
+            SMTP_USERNAME='${{ secrets.SMTP_USERNAME }}'
