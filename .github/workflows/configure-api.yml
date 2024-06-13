@@ -30,4 +30,5 @@ jobs:
             az webapp config appsettings set \
             --name ${{ vars.AZURE_WEB_APP_NAME }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --settings API_URL=${{ vars.API_URL }}
+            --settings \
+            API_URL=${{ vars.API_URL }}
