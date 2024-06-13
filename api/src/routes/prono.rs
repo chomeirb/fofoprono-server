@@ -108,7 +108,18 @@ async fn get_games(
                             "result": prono.result,
                         })
                     }),
-                    game,
+                    serde_json::json!({
+                        "id": game.id,
+                        "time": game.time,
+                        "stage": game.stage,
+                        "team_home": game.team_home,
+                        "team_away": game.team_away,
+                        "score_home": game.score_home,
+                        "score_away": game.score_away,
+                        "odds_home": game.odds_home,
+                        "odds_away": game.odds_away,
+                        "odds_draw": game.odds_draw,
+                    }),
                 )
             })
             .collect::<Vec<_>>(),
