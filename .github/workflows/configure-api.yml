@@ -31,14 +31,14 @@ jobs:
             --name ${{ secrets.AZURE_WEB_APP_NAME }} \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --settings \
-            API_URL='${{ vars.API_URL }}' \
-            COOKEY='${{ secrets.COOKEY }}' \
-            COOKIE_DOMAIN='${{ vars.COOKIE_DOMAIN }}' \
-            DATABASE_URL='${{ secrets.DATABASE_URL }}' \
-            DOMAIN='${{ vars.DOMAIN }}' \
-            MAINTAINER_MAIL='${{ vars.MAINTAINER_MAIL }}' \
-            PORT='${{ vars.API_PORT }}' \
-            SMTP_HOST='${{ vars.SMTP_HOST }}' \
-            SMTP_PASSWORD='${{ secrets.SMTP_PASSWORD }}' \
-            SMTP_PORT='${{ vars.SMTP_PORT }}' \
-            SMTP_USERNAME='${{ secrets.SMTP_USERNAME }}'
+            API_URL=${{ vars.API_URL }} \
+            COOKEY=${{ secrets.COOKEY }} \
+            COOKIE_DOMAIN=${{ vars.COOKIE_DOMAIN }} \
+            DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            DOMAIN=${{ vars.DOMAIN }} \
+            MAINTAINER_MAIL=${{ vars.MAINTAINER_MAIL }} \
+            PORT=${{ vars.API_PORT }} \
+            SMTP_HOST=${{ vars.SMTP_HOST }} \
+            SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }} \
+            SMTP_PORT=${{ vars.SMTP_PORT }} \
+            SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
