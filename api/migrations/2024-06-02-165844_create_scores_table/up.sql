@@ -11,12 +11,16 @@ CREATE TABLE scores (
 
 -- Update scores by inserting the row corresponding to the user and the competition or updating the existing one if it already exists.
 CREATE OR REPLACE FUNCTION update_scores() RETURNS TRIGGER AS $$
+DECLARE
+  comp_id INTEGER;
 BEGIN
+  -- First, determine the competition_id for the new game
+  SELECT games.competition_id INTO comp_id FROM games WHERE games.id = NEW.game_id;
+
+  -- Then, use this competition_id to filter pronos in the subqueries
   INSERT INTO scores (user_id, competition_id, points, perfect, good) VALUES (
     NEW.user_id,
-    (
-      SELECT games.competition_id FROM games WHERE games.id = NEW.game_id
-    ),
+    comp_id,
     (
       SELECT COALESCE(SUM(
         CASE
@@ -24,7 +28,7 @@ BEGIN
           WHEN pronos.result = 'correct' THEN multiplier_odds(games.score_home, games.score_away, games.odds_home, games.odds_away, games.odds_draw) * multiplier_stage(games.stage)
           ELSE 0
         END
-      ), 0) FROM pronos, games WHERE pronos.user_id = NEW.user_id AND pronos.game_id = games.id
+      ), 0) FROM pronos, games WHERE pronos.user_id = NEW.user_id AND pronos.game_id = games.id AND games.competition_id = comp_id
     ),
     (
       SELECT COALESCE(SUM(
@@ -32,7 +36,7 @@ BEGIN
           WHEN pronos.result = 'exact' THEN 1
           ELSE 0
         END
-      ), 0) FROM pronos WHERE pronos.user_id = NEW.user_id
+      ), 0) FROM pronos, games WHERE pronos.user_id = NEW.user_id AND pronos.game_id = games.id AND games.competition_id = comp_id
     ),
     (
       SELECT COALESCE(SUM(
@@ -40,7 +44,7 @@ BEGIN
           WHEN pronos.result = 'correct' THEN 1
           ELSE 0
         END
-      ), 0) FROM pronos WHERE pronos.user_id = NEW.user_id
+      ), 0) FROM pronos, games WHERE pronos.user_id = NEW.user_id AND pronos.game_id = games.id AND games.competition_id = comp_id
     )
   )
   ON CONFLICT (user_id, competition_id) DO UPDATE SET
