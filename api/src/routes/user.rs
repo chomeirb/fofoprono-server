@@ -50,10 +50,10 @@ async fn signup_user(
 
     Auth::authenticate(&req, id)?;
 
-    let domain = env::var("DOMAIN").expect("DOMAIN must be set");
+    let client = env::var("CLIENT_URL").expect("CLIENT_URL must be set");
 
     Ok(HttpResponse::SeeOther()
-        .append_header((header::LOCATION, format!("{}/prono", domain)))
+        .append_header((header::LOCATION, format!("{}/prono", client)))
         .finish())
 }
 

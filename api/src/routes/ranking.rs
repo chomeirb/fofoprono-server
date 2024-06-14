@@ -8,7 +8,7 @@ async fn ranking(
 ) -> Result<HttpResponse, Error> {
     let result = web::block(move || {
         let conn = &mut pool.get()?;
-        actions::get_users_scores_ordered(conn, *competition_id)
+        actions::get_users_score_ordered(conn, *competition_id)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;

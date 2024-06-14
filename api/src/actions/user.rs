@@ -10,8 +10,7 @@ use crate::{
     schema::{hashes, scores, users},
 };
 
-#[allow(clippy::type_complexity)]
-pub fn get_users_scores_ordered(
+pub fn get_users_score_ordered(
     conn: &mut PgConnection,
     competition_id: i32,
 ) -> Result<Vec<(User, Score)>, DbError> {
