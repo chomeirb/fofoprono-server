@@ -63,19 +63,18 @@ pub fn get_pronos(
     let user_id = user_id.unwrap_or(-999);
 
     let query = games::table
-        .order(games::time)
-        .left_outer_join(
-            pronos::table.on(pronos::game_id
-                .eq(games::id)
-                .and(pronos::user_id.eq(user_id).or(pronos::user_id.is_null()))),
-        )
         .filter(games::competition_id.eq(competition_id))
-        .into_boxed();
+        .order(games::time);
+    let on = pronos::game_id
+        .eq(games::id)
+        .and(pronos::user_id.eq(user_id).or(pronos::user_id.is_null()));
 
-    let query = match filter_incoming {
-        true => query.filter(games::time.gt(diesel::dsl::now)),
-        false => query,
+    let result = match filter_incoming {
+        true => query
+            .left_outer_join(pronos::table.on(on.and(games::time.lt(diesel::dsl::now))))
+            .load(conn),
+        false => query.left_outer_join(pronos::table.on(on)).load(conn),
     };
 
-    Ok(query.load(conn)?)
+    Ok(result?)
 }

@@ -75,20 +75,21 @@ async fn get_games(
     user: Option<Auth<i32>>,
     path: web::Path<PronoPath>,
 ) -> Result<HttpResponse, Error> {
-    let id = user.get();
+    let authed = user.get();
 
     let games = web::block(move || {
         let conn = &mut pool.get()?;
 
-        let id = path
+        let queried = path
             .username
-            .as_ref()
+            .as_deref()
             .map(|name| actions::name_get_user(conn, name))
             .transpose()?
-            .map(|user| user.id)
-            .or(id);
+            .map(|user| user.id);
 
-        actions::get_pronos(conn, id, path.competition_id, false)
+        let filter = queried.is_some();
+
+        actions::get_pronos(conn, queried.or(authed), path.competition_id, filter)
     })
     .await?
     .map_err(error::ErrorNotFound)?;
