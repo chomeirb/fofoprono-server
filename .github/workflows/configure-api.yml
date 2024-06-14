@@ -32,6 +32,7 @@ jobs:
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --settings \
             API_URL='${{ vars.API_URL }}' \
+            CLIENT_URL='${{ vars.CLIENT_URL }}' \
             COOKEY='${{ secrets.COOKEY }}' \
             COOKIE_DOMAIN='${{ vars.COOKIE_DOMAIN }}' \
             DATABASE_URL='${{ secrets.DATABASE_URL }}' \
