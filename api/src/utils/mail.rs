@@ -10,9 +10,9 @@ pub fn send_mail(
     body: String,
     reply_to: &str,
 ) -> Result<Response, DbError> {
-    let host = std::env::var("MAIL_HOST").expect("MAIL_HOST must be set");
-    let user = std::env::var("MAIL_USER").expect("MAIL_USER must be set");
-    let password = std::env::var("MAIL_PASSWORD").expect("MAIL_PASSWORD must be set");
+    let host = std::env::var("SMTP_HOST").expect("SMTP_HOST must be set");
+    let user = std::env::var("SMTP_USERNAME").expect("SMTP_USERNAME must be set");
+    let password = std::env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set");
 
     let email = Message::builder()
         .from(["Fofoprono <", reply_to, ">"].join("").parse().unwrap())
