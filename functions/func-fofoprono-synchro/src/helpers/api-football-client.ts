@@ -9,14 +9,15 @@ const apiBaseUrl = "https://api-football-v1.p.rapidapi.com/v3";
 const apiKey = process.env.API_FOOTBALL_KEY;
 
 export class ApiFootballClient {
-  public static async getGames(fromDate: Date, toDate: Date) {
+  public static async getGames() {
     const params = {
       league: leagueId.toString(),
       season: season.toString(),
-      from: formatDate(fromDate),
-      to: formatDate(toDate),
+      from: formatDate(new Date()),
+      to: formatDate(new Date(new Date().setDate(new Date().getDate() + 40))),
     };
 
+    console.log(params);
     return await this.fetch<Game>("fixtures", params);
   }
 
@@ -27,32 +28,56 @@ export class ApiFootballClient {
       bookmaker: bookmakerId.toString(),
     };
 
-    return await this.fetch<Odds>("odds", params);
+    return await this.fetch<Odds>("odds", params, true);
   }
 
   private static async fetch<T>(
     endpoint: string,
-    params: { [key: string]: string }
+    params: { [key: string]: string },
+    pageable: boolean = false
   ) {
-    const result = await fetch(buildUrl(`${apiBaseUrl}/${endpoint}`, params), {
-      method: "GET",
-      headers: {
-        "x-rapidapi-key": apiKey,
-      },
-    });
+    let current: number = 1;
+    let total: number = 1;
+    const data: T[] = [];
+    console.log(params);
 
-    const deserializedData: T[] = (await result.json()).response.map(
-      (game: any) => {
-        return game as T;
+    while (current <= total) {
+      if (pageable) {
+        params.page = current.toString();
       }
-    );
-    return deserializedData;
+      console.log(params);
+
+      const result = await fetch(
+        buildUrl(`${apiBaseUrl}/${endpoint}`, params),
+        {
+          method: "GET",
+          headers: {
+            "x-rapidapi-key": apiKey,
+          },
+        }
+      );
+
+      const deserializedData: {
+        paging: {
+          current: number;
+          total: number;
+        };
+        response: T[];
+      } = await result.json();
+
+      data.push(...deserializedData.response);
+
+      current = deserializedData.paging.current + 1;
+      total = deserializedData.paging.total;
+    }
+    return data;
   }
 }
-
 function buildUrl(url: string, params: { [key: string]: string }) {
   const searchParams = new URLSearchParams(params);
-  return `${url}?${searchParams.toString()}`;
+  const u = `${url}?${searchParams.toString()}`;
+  console.log(u);
+  return u;
 }
 
 function formatDate(date: Date): string {

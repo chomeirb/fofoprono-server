@@ -1,3 +1,5 @@
+import { Team } from "./team";
+
 export interface Game {
   fixture: {
     id: number;
@@ -5,10 +7,10 @@ export interface Game {
   };
   teams: {
     home: {
-      name: string;
+      name: Team;
     };
     away: {
-      name: string;
+      name: Team;
     };
   };
 }

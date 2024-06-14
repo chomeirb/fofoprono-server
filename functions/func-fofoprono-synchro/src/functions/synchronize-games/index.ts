@@ -10,39 +10,24 @@ import { EURO_2024_ID } from "../../models/database/const.js";
 import { NORDIC_BET_ID } from "../../models/api-football/const.js";
 import { SqlRepository } from "../../helpers/sql-repository.js";
 import { Game } from "../../models/database/game.js";
+import { Mapper } from "../../helpers/mapper.js";
 
-export async function httpTrigger(
+export async function synchronizeGames(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
   context.log(`Http function processed request for url "${request.url}"`);
 
   try {
-    var stage = request.query.get("stage");
-    var fromDate = request.query.get("fromDate");
-    var toDate = request.query.get("toDate");
-
-    if (!stage || !fromDate || !toDate) {
-      return { status: 400, body: "Missing parameters" };
-    }
-
-    if (fromDate < new Date().toISOString()) {
-      return { status: 400, body: "fromDate must be in the future" };
-    }
-
-    var games = await ApiFootballClient.getGames(
-      new Date(fromDate),
-      new Date(toDate)
-    );
+    var games = await ApiFootballClient.getGames();
     var odds = await ApiFootballClient.getOdds(NORDIC_BET_ID);
-
     var entities = games.map((game) => {
       return {
         time: game.fixture.date,
-        stage: stage,
+        stage: Mapper.fromMatchDateToStage(game.fixture.date),
 
-        team_home: game.teams.home.name,
-        team_away: game.teams.away.name,
+        team_home: Mapper.fromApiNameToSqlNames(game.teams.home.name),
+        team_away: Mapper.fromApiNameToSqlNames(game.teams.away.name),
 
         odds_home: Number(
           odds
@@ -71,15 +56,18 @@ export async function httpTrigger(
       } as Game;
     });
 
-    // await new SqlRepository().upsertGames(entities);
+    var repository = new SqlRepository();
+    await repository.connect();
+    await repository.upsertGames(entities);
+    await repository.disconnect();
   } catch (e) {
     context.error(e);
     return { status: 500, body: e };
   }
 }
 
-app.http("httpTrigger", {
+app.http("synchronizeGames", {
   methods: ["GET", "POST"],
   authLevel: "anonymous",
-  handler: httpTrigger,
+  handler: synchronizeGames,
 });

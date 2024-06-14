@@ -1,1 +1,1 @@
-export const NORDIC_BET_ID = 27;
+export const NORDIC_BET_ID = 16;

@@ -1,10 +1,12 @@
+import { Team } from "./team";
+
 export interface Game {
   id: number;
   time: Date;
   stage: Stage;
 
-  team_home: string;
-  team_away: string;
+  team_home: Team;
+  team_away: Team;
 
   odds_home?: number;
   odds_draw?: number;
@@ -14,4 +16,4 @@ export interface Game {
   external_api_id: number;
 }
 
-export type Stage = "Group" | "Sixteen" | "Quarter" | "Semi" | "Final";
+export type Stage = "group" | "sixteen" | "quarter" | "semi" | "final";

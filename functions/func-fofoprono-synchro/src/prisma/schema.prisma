@@ -16,14 +16,14 @@ datasource db {
 model Game {
   id              Int         @id @default(autoincrement())
   time            DateTime
-  stage           String
+  stage           stage
   team_home       String
   team_away       String
   odds_home       Float?
   odds_draw       Float?
   odds_away       Float?
   competition_id  Int
-  external_api_id Int
+  external_api_id Int         @unique
   competition     Competition @relation(fields: [competition_id], references: [id])
 
   @@map("games")
@@ -35,4 +35,13 @@ model Competition {
   games Game[]
 
   @@map("competitions")
+}
+
+enum stage {
+  group
+  sixteen
+  quarter
+  semi
+  third_place
+  final
 }
